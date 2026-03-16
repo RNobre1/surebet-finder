@@ -5,139 +5,91 @@ class MatchesAggregator {
     this.apiKey = apiKey;
     this.config = config;
     this.http = axios.create({
-      baseURL: 'https://app.oddsapi.io/api/v1/',
-      headers: {
-        apikey: this.apiKey
+      baseURL: 'https://api.odds-api.io/v3/',
+      params: {
+        apiKey: this.apiKey
       }
     });
-    this.matches = [];
-    this.bets = [];
+    this.surebets = [];
   }
 
   async run() {
-    let data;
     try {
-      ({ data } = await this.http.get('odds'));
-    } catch (e) {
-      console.error('Error: Unable to call API');
-      throw e;
-    }
+      console.log('Fetching arbitrage opportunities...');
+      console.log(`Using bookmakers: ${this.config.bookmakers}`);
+      
+      // Calculate timestamp for 96 hours (4 days) from now
+      const now = new Date();
+      const futureDate = new Date(now.getTime() + 96 * 60 * 60 * 1000);
+      const commenceTimeTo = futureDate.toISOString();
+      console.log(`Filtering events starting before: ${commenceTimeTo}`);
 
-    this.cleanMatchesData(data);
-    this.separateMatchesToBets();
-  }
+      // Sports to check
+      // Common sports between Betano and Estrela Bet (excluding Handball and Baseball)
+      const sports = [
+          'football', 
+          'basketball',
+          'american-football',
+          'ice-hockey',
+          'rugby', // Note: API might use 'rugby-union' or 'rugby-league'. Using 'rugby' to see if it catches both or needs specific slugs.
+          'volleyball',
+          'tennis'
+      ];
+      let allArbs = [];
 
-  cleanMatchesData(rawMatches) {
-    for (let rawMatch of rawMatches) {
-      let match = {};
-      let bets = [];
+      for (const sport of sports) {
+        try {
+            console.log(`Checking ${sport}...`);
+            const { data: arbs } = await this.http.get('arbitrage-bets', {
+                params: {
+                  bookmakers: this.config.bookmakers,
+                  sport: sport,
+                  commenceTimeTo: commenceTimeTo
+                }
+            });
+            
+            // Check if response is array (some APIs return error object on empty/fail)
+            if (Array.isArray(arbs)) {
+                console.log(`Found ${arbs.length} arbs for ${sport}.`);
+                allArbs = allArbs.concat(arbs);
+            } else {
+                 console.log(`Unexpected response format for ${sport}.`);
+            }
 
-      match.info = {
-        sport: rawMatch.sport.name,
-        league: rawMatch.league.name,
-        teamA: rawMatch.event.home,
-        teamB: rawMatch.event.away,
-        startTime: rawMatch.event.start_time,
-        lastUpdated: rawMatch.sites.last_updated
-      };
-
-      match.bets = [];
-
-      delete rawMatch.sites.last_updated;
-      bets = Object.entries(rawMatch.sites);
-
-      for (let bet of bets) {
-        match.bets.push(this.cleanBetsData(bet[0], bet[1]));
-      }
-      match.bets = match.bets.reduce((acc, val) => acc.concat(val), []);
-      this.matches.push(match);
-    }
-  }
-
-  cleanBetsData(betName, sites) {
-    delete sites.outright; // Just removing unwanted value from API
-
-    sites = Object.values(sites);
-
-    let bets = {
-      name: betName,
-      data: []
-    };
-
-    for (let site of sites) {
-      // if (typeof site !== 'object') continue;
-      if (!this.config.allowExchanges && site.exchange) continue;
-
-      let odds = Object.entries(site.odds);
-
-      for (let odd of odds) {
-        // odds = [['1', $value], ['2', $value]]
-        let betId = bets.data.findIndex(bet => bet.name === odd[0]);
-
-        if (betId === -1) {
-          bets.data.push({
-            name: odd[0],
-            odds: []
-          });
-
-          betId = bets.data.length - 1;
+        } catch (err) {
+             // Handle 404 (often means no arbs found for parameters) gracefully
+             if (err.response && err.response.status === 404) {
+                 console.log(`No arbs found for ${sport} (404).`);
+             } else {
+                 console.error(`Error fetching arbs for ${sport}:`, err.message);
+                 if (err.response && err.response.data) console.error(JSON.stringify(err.response.data));
+             }
         }
-
-        let bet = bets.data[betId];
-
-        bet.odds.push({
-          value: odd[1],
-          broker: site.name
-        });
-      }
-    }
-
-    return bets;
-  }
-
-  separateMatchesToBets() {
-    for (let match of this.matches) {
-      for (let bet of match.bets) {
-        let info = { ...match.info, type: bet.name };
-        let odds = []; //[{name, value, broker}]
-
-        odds = this.getHighestOdds(bet.data);
-
-        this.bets.push({ info, odds });
-      }
-    }
-  }
-
-  getHighestOdds(betOptions) {
-    let odds = [];
-
-    for (let betOption of betOptions) {
-      let crescentOdds = betOption.odds.sort(
-        (oddA, oddB) => oddB.value - oddA.value
-      );
-      let brokers = '';
-
-      for (let odd of crescentOdds) {
-        if (odd.value === crescentOdds[0].value) brokers += `/${odd.broker}`;
       }
 
-      brokers = brokers.substr(1);
+      console.log(`Total arbitrage opportunities found: ${allArbs.length}`);
+      
+      if (allArbs.length > 0) {
+        // Log first item structure for debugging purposes since documentation is scarce
+        console.log('Sample arb structure:', JSON.stringify(allArbs[0], null, 2));
+      }
 
-      let highestOdd = {
-        name: betOption.name, // ex: 1
-        value: crescentOdds[0].value, // ex: 2.3
-        broker: brokers, // ex: Betclic
-        allOdds: crescentOdds
-      };
+      this.surebets = allArbs;
 
-      odds.push(highestOdd);
+    } catch (e) {
+      console.error('Error fetching arbitrage bets:');
+      if (e.response) {
+          console.error(`Status: ${e.response.status}`);
+          console.error(`Data: ${JSON.stringify(e.response.data)}`);
+      } else {
+          console.error(e.message);
+      }
+      // Don't throw to allow program to finish gracefully
     }
-
-    return odds;
   }
 
   getBets() {
-    return this.bets;
+    return this.surebets;
   }
 }
 
