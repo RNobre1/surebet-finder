@@ -11,9 +11,15 @@ class MatchesAggregator {
       }
     });
     this.surebets = [];
+    this.valueBets = [];
   }
 
   async run() {
+    await this.fetchArbitrageBets();
+    await this.fetchValueBets();
+  }
+
+  async fetchArbitrageBets() {
     try {
       console.log('Fetching arbitrage opportunities...');
       console.log(`Using bookmakers: ${this.config.bookmakers}`);
@@ -88,8 +94,90 @@ class MatchesAggregator {
     }
   }
 
+  async fetchValueBets() {
+    try {
+      console.log('\nFetching value bets opportunities...');
+      console.log(`Using bookmakers: ${this.config.bookmakers}`);
+      
+      const now = new Date();
+      const futureDate = new Date(now.getTime() + 96 * 60 * 60 * 1000);
+      const commenceTimeTo = futureDate.toISOString();
+      console.log(`Filtering events starting before: ${commenceTimeTo}`);
+
+      const sports = [
+          'football', 
+          'basketball',
+          'american-football',
+          'ice-hockey',
+          'rugby',
+          'volleyball',
+          'tennis'
+      ];
+      let allValueBets = [];
+
+      for (const sport of sports) {
+        try {
+            console.log(`Checking value bets for ${sport}...`);
+            // Value bets API requires bookmaker (singular)
+            const bookmakersList = this.config.bookmakers.split(',');
+            
+            for (const bookie of bookmakersList) {
+                try {
+                    // Fetch value bets
+                    // Note: 'value-bets' endpoint might use 'sport' param as well
+                    const { data: vbets } = await this.http.get('value-bets', {
+                        params: {
+                          apiKey: this.apiKey, // Redundant if in default params but safe
+                          bookmaker: bookie.trim(),
+                          sport: sport,
+                          commenceTimeTo: commenceTimeTo,
+                          includeEventDetails: 'true'
+                        }
+                    });
+
+                    if (Array.isArray(vbets) && vbets.length > 0) {
+                        console.log(`Found ${vbets.length} value bets for ${sport} at ${bookie.trim()}.`);
+                        allValueBets = allValueBets.concat(vbets);
+                    }
+                } catch (innerErr) {
+                     if (innerErr.response && innerErr.response.status === 404) {
+                         // No bets found, ignore
+                     } else {
+                         // Some errors are expected if no value bets found for specific criteria
+                         // console.error(`No value bets for ${sport} at ${bookie.trim()} (${innerErr.message})`);
+                     }
+                }
+            }
+
+        } catch (err) {
+             console.error(`Error in value bets loop for ${sport}:`, err.message);
+        }
+      }
+
+      console.log(`Total value bets found: ${allValueBets.length}`);
+      
+      if (allValueBets.length > 0) {
+        console.log('Sample value bet structure:', JSON.stringify(allValueBets[0], null, 2));
+      }
+
+      this.valueBets = allValueBets;
+
+    } catch (e) {
+      console.error('Error fetching value bets:');
+      if (e.response) {
+          console.error(`Status: ${e.response.status}`);
+          console.error(`Data: ${JSON.stringify(e.response.data)}`);
+      } else {
+          console.error(e.message);
+      }
+    }
+  }
+
   getBets() {
-    return this.surebets;
+    return {
+        surebets: this.surebets,
+        valueBets: this.valueBets
+    };
   }
 }
 

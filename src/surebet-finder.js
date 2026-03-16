@@ -10,17 +10,30 @@ class SurebetFinder {
     this.surebets = [];
     this.bets = [];
   }
-  async run() {
-    await this.aggregator.run();
+  async run(mode = 'all') {
+    if (mode === 'surebets') {
+      await this.aggregator.fetchArbitrageBets();
+    } else if (mode === 'valuebets') {
+      await this.aggregator.fetchValueBets();
+    } else {
+      await this.aggregator.run();
+    }
 
-    this.bets = this.aggregator.getBets();
-    this.surebets = this.calculator.extract(this.bets);
+    const bets = this.aggregator.getBets();
+    const results = this.calculator.extract(bets);
 
-    return this.surebets;
+    this.surebets = results.surebets;
+    this.valueBets = results.valueBets;
+
+    return results;
   }
 
   getSurebets() {
     return this.surebets;
+  }
+
+  getValueBets() {
+    return this.valueBets;
   }
 }
 

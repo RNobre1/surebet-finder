@@ -9,20 +9,71 @@ class SurebetCalculator {
 
   extract(bets) {
     if (bets) this.bets = bets;
-    // If bets is empty or null, handle gracefully
-    if (!this.bets || this.bets.length === 0) {
-        console.log(chalk.yellow('No arbitrage opportunities received from API.'));
-        return [];
+    
+    // Check if bets has surebets and valueBets properties (from aggregator change)
+    if (this.bets && (this.bets.surebets || this.bets.valueBets)) {
+        this.surebets = this.bets.surebets || [];
+        this.valueBets = this.bets.valueBets || [];
+    } else {
+        // Fallback for old structure or direct array
+        this.surebets = Array.isArray(this.bets) ? this.bets : [];
+        this.valueBets = [];
     }
 
-    // Since we are using the /arbitrage-bets endpoint, 'bets' ARE the surebets.
-    // We just need to normalize them for display/investment calculation.
-    this.surebets = this.bets; 
-    
-    // Attempt to calculate investment if structure allows, otherwise just pass through
-    this.calculateInvestment();
+    if (this.surebets.length === 0) {
+        console.log(chalk.yellow('No arbitrage opportunities received from API.'));
+    } else {
+        this.calculateInvestment();
+    }
 
-    return this.surebets;
+    if (this.valueBets.length === 0) {
+        console.log(chalk.yellow('No value bets received from API.'));
+    } else {
+        this.displayValueBets();
+    }
+
+    return { surebets: this.surebets, valueBets: this.valueBets };
+  }
+
+  displayValueBets() {
+    console.log(chalk.magenta(`\nProcessing ${this.valueBets.length} value bets...`));
+    
+    // Sort by expected value (descending)
+    const sortedValueBets = this.valueBets.sort((a, b) => b.expectedValue - a.expectedValue);
+
+    for (let bet of sortedValueBets) {
+        try {
+            // Value Bet Structure based on docs:
+            // { id, eventId, bookmaker, market: {name, home, draw, away}, betSide, expectedValue, bookmakerOdds, event: {home, away, league, sport} }
+            
+            const ev = bet.expectedValue ? (bet.expectedValue * 100).toFixed(2) : '?';
+            const bookmaker = bet.bookmaker || 'Unknown Bookie';
+            const marketName = bet.market ? bet.market.name : 'Unknown Market';
+            const selection = bet.betSide || 'Unknown Selection';
+            const odds = bet.bookmakerOdds ? bet.bookmakerOdds[selection] : (bet.odds || '?');
+            
+            const eventName = bet.event ? `${bet.event.home} vs ${bet.event.away}` : 'Unknown Event';
+            const league = bet.event ? bet.event.league : '';
+            const sport = bet.event ? bet.event.sport : '';
+
+            console.log(
+                chalk.bold(
+                  `${eventName} ${chalk.magenta(
+                    'EV: +' + ev + '%'
+                  )}`
+                )
+            );
+            console.log(`${sport} - ${league}`);
+            console.log(`  ${marketName} - ${selection} @${odds} [${bookmaker}]`);
+            if (bet.bookmakerOdds && bet.bookmakerOdds.homeDirectLink) {
+                 // console.log(`  Link: ${bet.bookmakerOdds.homeDirectLink}`); // Optional
+            }
+            console.log('');
+
+        } catch (err) {
+            console.error('Error displaying value bet:', err.message);
+        }
+    }
   }
 
   calculateInvestment() {

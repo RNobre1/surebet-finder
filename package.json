@@ -5,7 +5,9 @@
   "main": "src/surebet-finder.js",
   "scripts": {
     "dev": "node --inspect-brk index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "surebets": "node index.js surebets",
+    "valuebets": "node index.js valuebets"
   },
   "author": "lucas.portet <lucasportet@gmail.com>",
   "license": "ISC",
