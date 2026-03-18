@@ -23,6 +23,13 @@ vi.mock('../../../netlify/lib/surebetsFetcher', () => ({
   fetchSurebetsFromApi: vi.fn(),
 }))
 
+// Mock Netlify Blobs: simulates no stored fingerprint so emails are always sent in tests
+const mockBlobGet = vi.fn().mockResolvedValue(null)
+const mockBlobSet = vi.fn().mockResolvedValue(undefined)
+vi.mock('@netlify/blobs', () => ({
+  getStore: vi.fn(() => ({ get: mockBlobGet, set: mockBlobSet })),
+}))
+
 describe('Cron Surebets Scheduled Function', () => {
   beforeEach(() => {
     vi.clearAllMocks()

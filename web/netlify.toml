@@ -15,6 +15,3 @@
 
 [functions.cron_surebets]
   schedule = "* * * * *"
-
-[functions.test_cron]
-  schedule = "* * * * *"
