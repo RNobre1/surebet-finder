@@ -88,7 +88,7 @@ interface Surebet {
 
 // Netlify configuration for Scheduled Functions
 export const config = {
-  schedule: '*/6 * * * *', // Every 6 minutes
+  schedule: '1-5,7-11,13-17,19-23,25-29,31-35,37-41,43-47,49-53,55-59 * * * *',
 }
 
 // Helper para formatar o email e calcular as stakes baseadas em 100 BRL
