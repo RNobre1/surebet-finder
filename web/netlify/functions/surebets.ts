@@ -6,7 +6,7 @@ const SPORTS = ['football', 'basketball', 'american-football', 'tennis', 'volley
 
 export const handler: Handler = async () => {
   const API_KEY = process.env.ODDS_API_KEY ?? ''
-  
+
   if (!API_KEY) {
     return { statusCode: 500, body: JSON.stringify({ error: 'ODDS_API_KEY not set' }) }
   }

@@ -33,7 +33,7 @@ const mockTransactions: Transaction[] = [
     description: 'Profit',
     date: '2025-01-02T12:00:00Z',
     created_at: '2025-01-02T00:00:00Z',
-  }
+  },
 ]
 
 describe('useTransactions', () => {
@@ -59,7 +59,7 @@ describe('useTransactions', () => {
   it('generates chart data correctly for month period', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2025-01-10T12:00:00Z')) // ensure relative dates logic works
-    
+
     const orderMock = vi.fn().mockResolvedValue({ data: mockTransactions, error: null })
     const eqMock = vi.fn().mockReturnValue({ order: orderMock })
     const selectMock = vi.fn().mockReturnValue({ eq: eqMock })
@@ -71,9 +71,9 @@ describe('useTransactions', () => {
 
     const chartData = result.current.getChartData('month')
     expect(chartData.length).toBeGreaterThan(0)
-    
+
     // Day 1 => Week 1
-    const week1Data = chartData.find(d => d.label === 'Sem 1')
+    const week1Data = chartData.find((d) => d.label === 'Sem 1')
     expect(week1Data).toBeDefined()
     expect(week1Data?.deposits).toBe(1000)
     expect(week1Data?.profit).toBe(50)

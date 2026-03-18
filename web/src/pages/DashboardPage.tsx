@@ -29,23 +29,27 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const { freeBets, expiringFreeBets } = useFreeBets(userId)
   const [period, setPeriod] = useState<Period>('month')
 
-  const totalAllocated = useMemo(() => 
-    accounts.filter((a) => a.is_active).reduce((s, a) => s + a.balance, 0),
-  [accounts])
+  const totalAllocated = useMemo(
+    () => accounts.filter((a) => a.is_active).reduce((s, a) => s + a.balance, 0),
+    [accounts]
+  )
 
-  const roi = useMemo(() => 
-    totalDeposited > 0 ? (totalProfit / totalDeposited) * 100 : 0,
-  [totalDeposited, totalProfit])
+  const roi = useMemo(
+    () => (totalDeposited > 0 ? (totalProfit / totalDeposited) * 100 : 0),
+    [totalDeposited, totalProfit]
+  )
 
-  const openFreeBetsValue = useMemo(() => 
-    freeBets.filter((fb) => !fb.is_used).reduce((s, fb) => s + fb.amount, 0),
-  [freeBets])
+  const openFreeBetsValue = useMemo(
+    () => freeBets.filter((fb) => !fb.is_used).reduce((s, fb) => s + fb.amount, 0),
+    [freeBets]
+  )
 
   const chartData = useMemo(() => getChartData(period), [getChartData, period])
 
-  const activeSortedAccounts = useMemo(() => 
-    [...accounts].filter((a) => a.is_active).sort((a, b) => b.balance - a.balance),
-  [accounts])
+  const activeSortedAccounts = useMemo(
+    () => [...accounts].filter((a) => a.is_active).sort((a, b) => b.balance - a.balance),
+    [accounts]
+  )
 
   const stats = [
     {
@@ -174,32 +178,31 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             <Wallet size={16} className="text-slate-400" /> Saldo por Casa
           </h3>
           <div className="space-y-2">
-            {activeSortedAccounts
-              .map((acc) => {
-                const pct = totalAllocated > 0 ? (acc.balance / totalAllocated) * 100 : 0
-                return (
-                  <div key={acc.id} className="flex items-center gap-3">
-                    <div
-                      className="h-7 w-7 rounded-full text-xs font-bold flex items-center justify-center text-slate-900 shrink-0"
-                      style={{ backgroundColor: acc.color }}
-                    >
-                      {acc.name.slice(0, 2).toUpperCase()}
+            {activeSortedAccounts.map((acc) => {
+              const pct = totalAllocated > 0 ? (acc.balance / totalAllocated) * 100 : 0
+              return (
+                <div key={acc.id} className="flex items-center gap-3">
+                  <div
+                    className="h-7 w-7 rounded-full text-xs font-bold flex items-center justify-center text-slate-900 shrink-0"
+                    style={{ backgroundColor: acc.color }}
+                  >
+                    {acc.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white font-medium">{acc.name}</span>
+                      <span className="text-slate-400">{formatCurrency(acc.balance)}</span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-white font-medium">{acc.name}</span>
-                        <span className="text-slate-400">{formatCurrency(acc.balance)}</span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-slate-700">
-                        <div
-                          className="h-1.5 rounded-full transition-all"
-                          style={{ width: `${pct}%`, backgroundColor: acc.color }}
-                        />
-                      </div>
+                    <div className="h-1.5 w-full rounded-full bg-slate-700">
+                      <div
+                        className="h-1.5 rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: acc.color }}
+                      />
                     </div>
                   </div>
-                )
-              })}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

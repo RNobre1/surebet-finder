@@ -5,11 +5,21 @@ import { supabase } from './lib/supabase'
 import { AppShell } from './components/layout/AppShell'
 import { LoginPage } from './pages/auth/LoginPage'
 
-const DashboardPage = lazy(() => import('./pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
-const AccountsPage = lazy(() => import('./pages/AccountsPage').then(module => ({ default: module.AccountsPage })))
-const SurebetsPage = lazy(() => import('./pages/SurebetsPage').then(module => ({ default: module.SurebetsPage })))
-const ValueBetsPage = lazy(() => import('./pages/ValueBetsPage').then(module => ({ default: module.ValueBetsPage })))
-const FreeBetsPage = lazy(() => import('./pages/FreeBetsPage').then(module => ({ default: module.FreeBetsPage })))
+const DashboardPage = lazy(() =>
+  import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage }))
+)
+const AccountsPage = lazy(() =>
+  import('./pages/AccountsPage').then((module) => ({ default: module.AccountsPage }))
+)
+const SurebetsPage = lazy(() =>
+  import('./pages/SurebetsPage').then((module) => ({ default: module.SurebetsPage }))
+)
+const ValueBetsPage = lazy(() =>
+  import('./pages/ValueBetsPage').then((module) => ({ default: module.ValueBetsPage }))
+)
+const FreeBetsPage = lazy(() =>
+  import('./pages/FreeBetsPage').then((module) => ({ default: module.FreeBetsPage }))
+)
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -43,11 +53,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppShell>
-        <Suspense fallback={
-          <div className="flex h-full items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-green-500 border-t-transparent" />
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="flex h-full items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-green-500 border-t-transparent" />
+            </div>
+          }
+        >
           <Routes>
             <Route path="/" element={<DashboardPage userId={user.id} />} />
             <Route path="/contas" element={<AccountsPage userId={user.id} />} />

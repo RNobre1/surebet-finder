@@ -38,7 +38,7 @@ describe('useBookmakerAccounts', () => {
     vi.mocked(supabase.from).mockReturnValue({ select: selectMock } as any)
 
     const { result } = renderHook(() => useBookmakerAccounts('user-123'))
-    
+
     // Initial state
     expect(result.current.loading).toBe(true)
 
@@ -54,15 +54,16 @@ describe('useBookmakerAccounts', () => {
     const orderMock = vi.fn().mockResolvedValue({ data: [], error: null })
     const eqMock = vi.fn().mockReturnValue({ order: orderMock })
     const selectMock = vi.fn().mockReturnValue({ eq: eqMock })
-    
+
     // Mock the insert
     const insertMock = vi.fn().mockResolvedValue({ error: null })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(supabase.from).mockImplementation((table) => {
       if (table === 'bookmaker_accounts') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { select: selectMock, insert: insertMock } as any
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return {} as any
     })
 
@@ -70,14 +71,17 @@ describe('useBookmakerAccounts', () => {
     await act(async () => {})
 
     await act(async () => {
-      await result.current.create({
-        name: 'Bet365',
-        balance: 500,
-        currency: 'BRL',
-        color: '#00ff00',
-        is_active: true,
-        notes: '',
-      }, 'user-123')
+      await result.current.create(
+        {
+          name: 'Bet365',
+          balance: 500,
+          currency: 'BRL',
+          color: '#00ff00',
+          is_active: true,
+          notes: '',
+        },
+        'user-123'
+      )
     })
 
     expect(insertMock).toHaveBeenCalledWith({
@@ -87,7 +91,7 @@ describe('useBookmakerAccounts', () => {
       color: '#00ff00',
       is_active: true,
       notes: '',
-      user_id: 'user-123'
+      user_id: 'user-123',
     })
   })
 })

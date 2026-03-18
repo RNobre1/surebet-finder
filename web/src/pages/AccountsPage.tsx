@@ -86,9 +86,10 @@ export function AccountsPage({ userId }: AccountsPageProps) {
     refetch()
   }
 
-  const totalBalance = useMemo(() => 
-    accounts.filter((a) => a.is_active).reduce((s, a) => s + a.balance, 0),
-  [accounts])
+  const totalBalance = useMemo(
+    () => accounts.filter((a) => a.is_active).reduce((s, a) => s + a.balance, 0),
+    [accounts]
+  )
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
