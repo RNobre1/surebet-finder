@@ -1,0 +1,25 @@
+# Force LF line endings for all text files in this repo
+# This prevents Windows from converting to CRLF which breaks Prettier/ESLint on Netlify CI
+* text=auto eol=lf
+
+# Explicit overrides for source files
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.md   text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.sql  text eol=lf
+*.env* text eol=lf
+
+# Binary files — no line ending conversion
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary

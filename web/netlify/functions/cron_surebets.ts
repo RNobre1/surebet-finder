@@ -86,16 +86,14 @@ export const handler: Handler = async () => {
     })
 
     // 6. Save fingerprint so next run can skip if nothing changed
-    await supabase
-      .from('cron_state')
-      .upsert(
-        {
-          key: 'last-surebet-fingerprint',
-          value: currentFingerprint,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'key' }
-      )
+    await supabase.from('cron_state').upsert(
+      {
+        key: 'last-surebet-fingerprint',
+        value: currentFingerprint,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'key' }
+    )
 
     console.log(`Successfully sent email with ${arbs.length} surebets to ${emails.length} users.`)
     return { statusCode: 200, body: 'Email sent' }
