@@ -12,7 +12,7 @@ export const config: Config = {
 export const handler: Handler = async () => {
   console.log('--- Cron Surebets Started ---')
   console.log('Time:', new Date().toISOString())
-  
+
   const API_KEY = process.env.ODDS_API_KEY
   const SUPABASE_URL = process.env.VITE_SUPABASE_URL
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -23,7 +23,7 @@ export const handler: Handler = async () => {
       API_KEY: !!API_KEY,
       SUPABASE_URL: !!SUPABASE_URL,
       SUPABASE_SERVICE_KEY: !!SUPABASE_SERVICE_KEY,
-      RESEND_API_KEY: !!RESEND_API_KEY
+      RESEND_API_KEY: !!RESEND_API_KEY,
     })
     return { statusCode: 500, body: 'Missing environment variables' }
   }
@@ -96,7 +96,6 @@ interface Surebet {
   away_team: string
   bookmakers: Bookmaker[]
 }
-
 
 // Helper para formatar o email e calcular as stakes baseadas em 100 BRL
 function formatSurebetsEmail(arbs: Surebet[]): string {
