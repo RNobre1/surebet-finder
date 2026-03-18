@@ -22,7 +22,7 @@ describe('useActiveSurebets', () => {
       data: { user: { id: 'test-user-id' } },
     } as AnyMock)
 
-    vi.mocked(supabase.from).mockImplementation((_table) => {
+    vi.mocked(supabase.from).mockImplementation(() => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
