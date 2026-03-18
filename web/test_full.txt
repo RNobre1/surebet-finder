@@ -1,0 +1,133 @@
+﻿
+> web@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mC:/Users/scorp/OneDrive/├ürea de Trabalho/Projetos/surebet/surebet-finder/web[39m
+
+ [31mÔØ»[39m src/__tests__/utils/formatDate.test.ts [2m([22m[2m10 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 46[2mms[22m[39m
+[31m     [31m├ù[31m formats an ISO string as dd/mm/yyyy[39m[32m 33[2mms[22m[39m
+[31m     [31m├ù[31m formats another date correctly[39m[32m 2[2mms[22m[39m
+     [32mÔ£ô[39m includes time in the formatted string[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m returns positive days for a future date[32m 4[2mms[22m[39m
+     [32mÔ£ô[39m returns 0 or 1 for same day (timezone-safe)[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m returns negative days for an expired date[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m returns true when expires within 7 days[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m returns false when expires in more than 7 days[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m returns false for already expired dates[32m 1[2mms[22m[39m
+     [32mÔ£ô[39m respects custom threshold[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/utils/formatCurrency.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/utils/calculateStakes.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useFreeBets.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useSurebets.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useValueBets.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/components/FreeBetAlert.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/components/SurebetCard.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/components/StakeCalculator.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 207[2mms[22m[39m
+node.exe : 
+No C:\Program 
+Files\nodejs\npm.ps1:29 
+caractere:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : N 
+   otSpecified: (:String) [],   
+  RemoteException
+    + FullyQualifiedErrorId : N 
+   ativeCommandError
+ 
+[31mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[39m
+[1m[41m Failed Tests 2 [49m[2
+2m[31mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[39
+m
+
+[41m[1m FAIL [22m[49m src/__
+tests__/utils/formatDate.test.ts
+[2m > [22mformatDate[2m > 
+[22mformats an ISO string as 
+dd/mm/yyyy
+[31m[1mAssertionError[22m: 
+expected '14/10/2025' to be 
+'15/10/2025' // Object.is 
+equality[39m
+
+Expected: 
+[32m"1[7m5[27m/10/2025"[39m
+Received: 
+[31m"1[7m4[27m/10/2025"[39m
+
+[36m [2mÔØ»[22m src/__tests__
+/utils/formatDate.test.ts:[2m7:
+38[22m[39m
+    [90m  5|[39m   
+[34mit[39m([32m'formats an 
+ISO string as 
+dd/mm/yyyy'[39m[33m,[39m () 
+[33m=>[39m {
+    [90m  6|[39m     // Use a 
+date string without time to 
+avoid UTC/local timezone issuÔÇª
+    [90m  7|[39m     [34mexpe
+ct[39m([34mformatDate[39m([3
+2m'2025-10-15'[39m))[33m.[39m
+[34mtoBe[39m([32m'15/10/2025'
+[39m)
+    [90m   |[39m              
+                        
+[31m^[39m
+    [90m  8|[39m   })
+    [90m  9|[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ
+»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»Ô
+Ä»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/2]ÔÄ»[22m[
+39m
+
+[41m[1m FAIL [22m[49m src/__
+tests__/utils/formatDate.test.ts
+[2m > [22mformatDate[2m > 
+[22mformats another date 
+correctly
+[31m[1mAssertionError[22m: 
+expected '28/02/2026' to be 
+'01/03/2026' // Object.is 
+equality[39m
+
+Expected: [32m"[7m01[27m/0[7
+m3[27m/2026"[39m
+Received: [31m"[7m28[27m/0[7
+m2[27m/2026"[39m
+
+[36m [2mÔØ»[22m src/__tests__
+/utils/formatDate.test.ts:[2m11
+:38[22m[39m
+    [90m  9|[39m
+    [90m 10|[39m   
+[34mit[39m([32m'formats 
+another date 
+correctly'[39m[33m,[39m () 
+[33m=>[39m {
+    [90m 11|[39m     [34mexpe
+ct[39m([34mformatDate[39m([3
+2m'2026-03-01'[39m))[33m.[39m
+[34mtoBe[39m([32m'01/03/2026'
+[39m)
+    [90m   |[39m              
+                        
+[31m^[39m
+    [90m 12|[39m   })
+    [90m 13|[39m })
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ
+»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»Ô
+Ä»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/2]ÔÄ»[22m[
+39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (9)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m51 passed[39m[22m[90m (53)[39m
+[2m   Start at [22m 23:18:24
+[2m   Duration [22m 2.64s[2m (transform 381ms, setup 1.35s, import 2.11s, tests 518ms, environment 15.44s)[22m
+

@@ -1,0 +1,12 @@
+﻿
+> web@0.0.0 lint
+> eslint .
+
+
+C:\Users\scorp\OneDrive\├ürea de Trabalho\Projetos\surebet\surebet-finder\web\vite.config.ts
+   6:13  error  Replace `ÔÅÄ┬À┬À┬À┬Àreact(),ÔÅÄ┬À┬À┬À┬Àtailwindcss(),ÔÅÄ┬À┬À` with `react(),┬Àtailwindcss()`  prettier/prettier
+  11:1   error  Delete `ÔÅÄÔÅÄ`                                                                  prettier/prettier
+
+Ô£û 2 problems (2 errors, 0 warnings)
+  2 errors and 0 warnings potentially fixable with the `--fix` option.
+

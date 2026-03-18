@@ -1,0 +1,20 @@
+﻿src/hooks/useTransactions.ts(3,28): error TS6196: 'TransactionType' is declared but never used.
+src/pages/AccountsPage.tsx(2,24): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/pages/AccountsPage.tsx(2,36): error TS6133: 'TrendingDown' is declared but its value is never read.
+src/pages/AccountsPage.tsx(2,58): error TS6133: 'Edit2' is declared but its value is never read.
+src/pages/auth/LoginPage.tsx(2,26): error TS2307: Cannot find module '../lib/supabase' or its corresponding type declarations.
+src/pages/DashboardPage.tsx(19,11): error TS6133: 'transactions' is declared but its value is never read.
+src/pages/DashboardPage.tsx(87,17): error TS2322: Type '(v: number) => [string, string]' is not assignable to type 'Formatter<ValueType, NameType> & ((value: ValueType, name: NameType, item: TooltipPayloadEntry, index: number, payload: TooltipPayload) => ReactNode | [...])'.
+  Type '(v: number) => [string, string]' is not assignable to type 'Formatter<ValueType, NameType>'.
+    Types of parameters 'v' and 'value' are incompatible.
+      Type 'ValueType | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+src/pages/DashboardPage.tsx(106,17): error TS2322: Type '(v: number) => [string]' is not assignable to type 'Formatter<ValueType, NameType> & ((value: ValueType, name: NameType, item: TooltipPayloadEntry, index: number, payload: TooltipPayload) => ReactNode | [...])'.
+  Type '(v: number) => [string]' is not assignable to type 'Formatter<ValueType, NameType>'.
+    Types of parameters 'v' and 'value' are incompatible.
+      Type 'ValueType | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+src/pages/FreeBetsPage.tsx(6,1): error TS6133: 'FreeBet' is declared but its value is never read.
+src/pages/SurebetsPage.tsx(2,26): error TS6133: 'ExternalLink' is declared but its value is never read.
+src/pages/ValueBetsPage.tsx(2,60): error TS6133: 'Zap' is declared but its value is never read.
+src/pages/ValueBetsPage.tsx(4,1): error TS6133: 'formatCurrency' is declared but its value is never read.
