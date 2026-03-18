@@ -55,8 +55,7 @@ export const handler: Handler = async () => {
       return { statusCode: 200, body: 'No change, email skipped' }
     }
 
-    // 3. Fetch users to notify
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    // 3. Fetch users to notify — reuse same supabase client
     const {
       data: { users },
       error,
