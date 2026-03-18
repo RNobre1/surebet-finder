@@ -2,7 +2,6 @@ import type { Handler } from '@netlify/functions'
 
 const ODDS_API_BASE = 'https://api.odds-api.io/v3'
 const BOOKMAKERS = ['Betano', 'Bet365']
-const SPORTS = ['football', 'basketball', 'american-football', 'tennis', 'volleyball']
 
 export const handler: Handler = async () => {
   const API_KEY = process.env.ODDS_API_KEY ?? ''
@@ -12,16 +11,13 @@ export const handler: Handler = async () => {
   }
 
   const results = await Promise.allSettled(
-    BOOKMAKERS.flatMap((bookmaker: string) =>
-      SPORTS.map((sport: string) => {
-        const url = new URL(`${ODDS_API_BASE}/value-bets`)
-        url.searchParams.set('apiKey', API_KEY)
-        url.searchParams.set('bookmaker', bookmaker)
-        url.searchParams.set('sport', sport)
-        url.searchParams.set('includeEventDetails', 'true')
-        return fetch(url.toString()).then((r) => (r.ok ? r.json() : []))
-      })
-    )
+    BOOKMAKERS.map((bookmaker: string) => {
+      const url = new URL(`${ODDS_API_BASE}/value-bets`)
+      url.searchParams.set('apiKey', API_KEY)
+      url.searchParams.set('bookmaker', bookmaker)
+      url.searchParams.set('includeEventDetails', 'true')
+      return fetch(url.toString()).then((r) => (r.ok ? r.json() : []))
+    })
   )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
