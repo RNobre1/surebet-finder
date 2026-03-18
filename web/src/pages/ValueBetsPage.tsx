@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { TrendingUp, RefreshCw, ExternalLink, AlertCircle } from 'lucide-react'
 import { useValueBets } from '../hooks/useValueBets'
 import { formatDateTime } from '../utils/formatDate'
@@ -51,26 +51,19 @@ export function ValueBetsPage() {
   }
 
   // Dynamic filter options
-  const availableSports = useMemo(
-    () => Array.from(new Set(valueBets.map((vb) => vb.event?.sport || 'Unknown'))),
-    [valueBets]
-  )
-  const availableBookmakers = useMemo(
-    () => Array.from(new Set(valueBets.map((vb) => vb.bookmaker))),
-    [valueBets]
-  )
-  const availableMarkets = useMemo(
-    () => Array.from(new Set(valueBets.map((vb) => vb.market?.name).filter(Boolean) as string[])),
-    [valueBets]
+  const availableSports = Array.from(new Set(valueBets.map((vb) => vb.event?.sport || 'Unknown')))
+  const availableBookmakers = Array.from(new Set(valueBets.map((vb) => vb.bookmaker)))
+  const availableMarkets = Array.from(
+    new Set(valueBets.map((vb) => vb.market?.name).filter(Boolean) as string[])
   )
 
   // Dynamic slider max values
-  const sliderMaxEv = useMemo(() => {
+  const sliderMaxEv = (() => {
     if (valueBets.length === 0) return 30
     return Math.ceil(Math.max(...valueBets.map((vb) => normalizeEv(vb.expectedValue ?? 0))))
-  }, [valueBets])
+  })()
 
-  const sliderMaxOdd = useMemo(() => {
+  const sliderMaxOdd = (() => {
     if (valueBets.length === 0) return 10
     return Math.ceil(
       Math.max(
@@ -79,44 +72,31 @@ export function ValueBetsPage() {
         )
       )
     )
-  }, [valueBets])
+  })()
 
   // Apply all filters
-  const filteredBets = useMemo(() => {
-    return valueBets.filter((vb) => {
-      if (sportFilter !== 'All' && vb.event?.sport !== sportFilter) return false
-      if (bookmakerFilter !== 'All' && vb.bookmaker !== bookmakerFilter) return false
-      if (marketFilter !== 'All' && vb.market?.name !== marketFilter) return false
+  const filteredBets = valueBets.filter((vb) => {
+    if (sportFilter !== 'All' && vb.event?.sport !== sportFilter) return false
+    if (bookmakerFilter !== 'All' && vb.bookmaker !== bookmakerFilter) return false
+    if (marketFilter !== 'All' && vb.market?.name !== marketFilter) return false
 
-      // Date range
-      if (vb.event?.date) {
-        const eventDate = new Date(vb.event.date)
-        if (dateFrom && eventDate < new Date(dateFrom)) return false
-        if (dateTo && eventDate > new Date(dateTo + 'T23:59:59')) return false
-      }
+    // Date range
+    if (vb.event?.date) {
+      const eventDate = new Date(vb.event.date)
+      if (dateFrom && eventDate < new Date(dateFrom)) return false
+      if (dateTo && eventDate > new Date(dateTo + 'T23:59:59')) return false
+    }
 
-      // EV%
-      const ev = normalizeEv(vb.expectedValue ?? 0)
-      if (ev < minEvFilter || ev > maxEvFilter) return false
+    // EV%
+    const ev = normalizeEv(vb.expectedValue ?? 0)
+    if (ev < minEvFilter || ev > maxEvFilter) return false
 
-      // Odds
-      const odd = Number(vb.bookmakerOdds?.[vb.betSide as keyof typeof vb.bookmakerOdds]) || 0
-      if (odd > 0 && (odd < minOddFilter || odd > maxOddFilter)) return false
+    // Odds
+    const odd = Number(vb.bookmakerOdds?.[vb.betSide as keyof typeof vb.bookmakerOdds]) || 0
+    if (odd > 0 && (odd < minOddFilter || odd > maxOddFilter)) return false
 
-      return true
-    })
-  }, [
-    valueBets,
-    sportFilter,
-    bookmakerFilter,
-    marketFilter,
-    dateFrom,
-    dateTo,
-    minEvFilter,
-    maxEvFilter,
-    minOddFilter,
-    maxOddFilter,
-  ])
+    return true
+  })
 
   // Pagination
   const totalPages = Math.ceil(filteredBets.length / ITEMS_PER_PAGE)
