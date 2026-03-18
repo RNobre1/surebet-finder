@@ -12,3 +12,9 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[functions.cron_surebets]
+  schedule = "* * * * *"
+
+[functions.test_cron]
+  schedule = "* * * * *"
