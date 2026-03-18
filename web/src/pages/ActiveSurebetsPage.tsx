@@ -25,9 +25,11 @@ export function ActiveSurebetsPage() {
             <CheckSquare className="text-green-500 hover:text-green-400" />
             Apostas Ativas
           </h1>
-          <p className="text-sm text-slate-400 mt-1">Gerencie suas Surebets e Arbitragens não-resolvidas</p>
+          <p className="text-sm text-slate-400 mt-1">
+            Gerencie suas Surebets e Arbitragens não-resolvidas
+          </p>
         </div>
-        
+
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 font-semibold text-white hover:bg-green-500 transition-colors"
@@ -47,8 +49,12 @@ export function ActiveSurebetsPage() {
       {activeSurebets.length === 0 && !error ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500 border border-slate-800 rounded-xl bg-slate-900/30">
           <CheckSquare size={40} className="mb-3 opacity-30 text-green-500" />
-          <p className="text-base text-center">Você não tem apostas ativas aguardando liquidação.</p>
-          <p className="text-sm mt-1 text-slate-600 text-center">Clique em "Nova Surebet" para adicionar o rastreio de um jogo.</p>
+          <p className="text-base text-center">
+            Você não tem apostas ativas aguardando liquidação.
+          </p>
+          <p className="text-sm mt-1 text-slate-600 text-center">
+            Clique em "Nova Surebet" para adicionar o rastreio de um jogo.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -57,9 +63,9 @@ export function ActiveSurebetsPage() {
           </p>
           <div className="space-y-4">
             {activeSurebets.map((bet) => (
-              <ActiveSurebetCard 
-                key={bet.id} 
-                surebet={bet} 
+              <ActiveSurebetCard
+                key={bet.id}
+                surebet={bet}
                 onResolve={(legId) => resolveLeg(bet.id, bet, legId)}
                 onVoid={() => voidSurebet(bet.id, bet)}
               />
@@ -69,10 +75,7 @@ export function ActiveSurebetsPage() {
       )}
 
       {isModalOpen && (
-        <AddActiveSurebetModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-        />
+        <AddActiveSurebetModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       )}
     </div>
   )

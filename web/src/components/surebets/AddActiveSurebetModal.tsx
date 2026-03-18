@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { X, Calculator, Plus, Save } from 'lucide-react'
+import { X, Calculator, Plus, Save, CheckSquare } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
+import { supabase } from '../../lib/supabase'
 import { useBookmakerAccounts } from '../../hooks/useBookmakerAccounts'
 import { useActiveSurebets } from '../../hooks/useActiveSurebets'
 import type { ActiveSurebetLeg } from '../../types'
@@ -11,8 +12,14 @@ interface AddActiveSurebetModalProps {
 }
 
 export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModalProps) {
+  // Auth
+  const [userId, setUserId] = useState<string | null>(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
+  }, [])
+
   // Global States
-  const { accounts } = useBookmakerAccounts()
+  const { accounts } = useBookmakerAccounts(userId)
   const { addSurebet } = useActiveSurebets()
 
   // Form States
@@ -27,7 +34,7 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
   // Legs State
   const [legs, setLegs] = useState<Partial<ActiveSurebetLeg>[]>([
     { leg_id: uuidv4(), odds: 0, stake: 0, bookmaker_id: '', market_name: '' },
-    { leg_id: uuidv4(), odds: 0, stake: 0, bookmaker_id: '', market_name: '' }
+    { leg_id: uuidv4(), odds: 0, stake: 0, bookmaker_id: '', market_name: '' },
   ])
 
   useEffect(() => {
@@ -39,7 +46,7 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
       setTotalStake('')
       setLegs([
         { leg_id: uuidv4(), odds: 0, stake: 0, bookmaker_id: '', market_name: '' },
-        { leg_id: uuidv4(), odds: 0, stake: 0, bookmaker_id: '', market_name: '' }
+        { leg_id: uuidv4(), odds: 0, stake: 0, bookmaker_id: '', market_name: '' },
       ])
       setError(null)
     }
@@ -47,8 +54,8 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
 
   if (!isOpen) return null
 
-  const handleLegChange = (id: string, field: keyof ActiveSurebetLeg, value: any) => {
-    setLegs(legs.map(leg => leg.leg_id === id ? { ...leg, [field]: value } : leg))
+  const handleLegChange = (id: string, field: keyof ActiveSurebetLeg, value: string | number) => {
+    setLegs(legs.map((leg) => (leg.leg_id === id ? { ...leg, [field]: value } : leg)))
   }
 
   const addLeg = () => {
@@ -64,9 +71,9 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
     // Calcula Probabilidade Implícita Total (Arbitrage Margin)
     let margin = 0
     let validOdds = true
-    legs.forEach(leg => {
+    legs.forEach((leg) => {
       if (!leg.odds || leg.odds <= 1) validOdds = false
-      else margin += (1 / leg.odds)
+      else margin += 1 / leg.odds
     })
 
     if (!validOdds) {
@@ -75,7 +82,7 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
     }
 
     // Distribui o dinheiro proporcionalmente
-    const newLegs = legs.map(leg => {
+    const newLegs = legs.map((leg) => {
       const impliedProb = 1 / (leg.odds || 1)
       const exactStake = (Number(totalStake) * impliedProb) / margin
       return { ...leg, stake: Number(exactStake.toFixed(2)) }
@@ -119,12 +126,13 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
         event_date: new Date(eventDate).toISOString(),
         total_stake: Number(totalStake),
         profit_margin: profitMargin,
-        legs: legs as ActiveSurebetLeg[]
+        legs: legs as ActiveSurebetLeg[],
       })
       onClose()
       window.location.reload() // Force parent fetch refresh via simple reload (or handle via prop)
-    } catch (err: any) {
-      setError(err.message || 'Falha ao registrar aposta manual.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Falha ao registrar aposta manual.'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -133,7 +141,6 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl shadow-black/50 p-6">
-        
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -157,10 +164,14 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Info Principal */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Dados do Evento</h3>
-            
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+              Dados do Evento
+            </h3>
+
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-300">Resumo do Jogo</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                Resumo do Jogo
+              </label>
               <input
                 type="text"
                 value={eventName}
@@ -170,7 +181,7 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
                 required
               />
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">Esporte</label>
@@ -183,7 +194,9 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Data do Jogo</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                  Data do Jogo
+                </label>
                 <input
                   type="datetime-local"
                   value={eventDate}
@@ -200,14 +213,20 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
           {/* Dinheiro & Stake */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Distribuição Financeira</h3>
+              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                Distribuição Financeira
+              </h3>
             </div>
 
             <div className="flex flex-col sm:flex-row items-end gap-3">
               <div className="flex-1 w-full">
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">Valor Total Investido (Bankroll Alocado)</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                  Valor Total Investido (Bankroll Alocado)
+                </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono">
+                    R$
+                  </span>
                   <input
                     type="number"
                     step="0.01"
@@ -232,7 +251,10 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
             {/* Pernas Variables */}
             <div className="space-y-3 mt-4">
               {legs.map((leg, index) => (
-                <div key={leg.leg_id} className="p-4 rounded-xl border border-slate-700 bg-slate-800/40 space-y-3 relative">
+                <div
+                  key={leg.leg_id}
+                  className="p-4 rounded-xl border border-slate-700 bg-slate-800/40 space-y-3 relative"
+                >
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-300 mb-2">
                     <span className="bg-slate-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                       {index + 1}
@@ -242,25 +264,37 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">Casa de Aposta</label>
+                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">
+                        Casa de Aposta
+                      </label>
                       <select
                         value={leg.bookmaker_id}
-                        onChange={(e) => handleLegChange(leg.leg_id!, 'bookmaker_id', e.target.value)}
+                        onChange={(e) =>
+                          handleLegChange(leg.leg_id!, 'bookmaker_id', e.target.value)
+                        }
                         className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
                         required
                       >
-                        <option value="" disabled>Selecione...</option>
-                        {accounts.map(acc => (
-                          <option key={acc.id} value={acc.id}>{acc.name} (Saldo: R${acc.balance})</option>
+                        <option value="" disabled>
+                          Selecione...
+                        </option>
+                        {accounts.map((acc) => (
+                          <option key={acc.id} value={acc.id}>
+                            {acc.name} (Saldo: R${acc.balance})
+                          </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">Aposta (Ex: Over 2.5)</label>
+                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">
+                        Aposta (Ex: Over 2.5)
+                      </label>
                       <input
                         type="text"
                         value={leg.market_name}
-                        onChange={(e) => handleLegChange(leg.leg_id!, 'market_name', e.target.value)}
+                        onChange={(e) =>
+                          handleLegChange(leg.leg_id!, 'market_name', e.target.value)
+                        }
                         className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
                         required
                       />
@@ -269,25 +303,33 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">Odd Ofertada</label>
+                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">
+                        Odd Ofertada
+                      </label>
                       <input
                         type="number"
                         step="0.01"
                         min="1.01"
                         value={leg.odds || ''}
-                        onChange={(e) => handleLegChange(leg.leg_id!, 'odds', Number(e.target.value))}
+                        onChange={(e) =>
+                          handleLegChange(leg.leg_id!, 'odds', Number(e.target.value))
+                        }
                         className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white font-mono focus:border-green-500 focus:outline-none"
                         required
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">Stake Final (R$)</label>
+                      <label className="mb-1.5 block text-[11px] font-medium text-slate-400 uppercase">
+                        Stake Final (R$)
+                      </label>
                       <input
                         type="number"
                         step="0.01"
                         min="0"
                         value={leg.stake || ''}
-                        onChange={(e) => handleLegChange(leg.leg_id!, 'stake', Number(e.target.value))}
+                        onChange={(e) =>
+                          handleLegChange(leg.leg_id!, 'stake', Number(e.target.value))
+                        }
                         className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-green-400 font-mono focus:border-green-500 focus:outline-none"
                         required
                       />
@@ -296,7 +338,7 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
                 </div>
               ))}
             </div>
-            
+
             <button
               type="button"
               onClick={addLeg}
@@ -329,7 +371,6 @@ export function AddActiveSurebetModal({ isOpen, onClose }: AddActiveSurebetModal
               )}
             </button>
           </div>
-
         </form>
       </div>
     </div>

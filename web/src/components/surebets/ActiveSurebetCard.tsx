@@ -13,28 +13,43 @@ export function ActiveSurebetCard({ surebet, onResolve, onVoid }: ActiveSurebetC
   const isVoid = surebet.status === 'void'
 
   return (
-    <div className={`p-5 rounded-2xl border transition-all ${
-      isSettled ? 'bg-slate-800/20 border-green-500/20' : 
-      isVoid ? 'bg-slate-800/20 border-slate-700/50' : 
-      'bg-slate-800/60 border-slate-700 shadow-xl'
-    }`}>
+    <div
+      className={`p-5 rounded-2xl border transition-all ${
+        isSettled
+          ? 'bg-slate-800/20 border-green-500/20'
+          : isVoid
+            ? 'bg-slate-800/20 border-slate-700/50'
+            : 'bg-slate-800/60 border-slate-700 shadow-xl'
+      }`}
+    >
       {/* Cabecalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-bold text-white">{surebet.event_name}</h3>
-            {isSettled && <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded">RESOLVIDA</span>}
-            {isVoid && <span className="text-xs font-bold text-slate-400 bg-slate-700/30 px-2 py-0.5 rounded">ANULADA</span>}
+            {isSettled && (
+              <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded">
+                RESOLVIDA
+              </span>
+            )}
+            {isVoid && (
+              <span className="text-xs font-bold text-slate-400 bg-slate-700/30 px-2 py-0.5 rounded">
+                ANULADA
+              </span>
+            )}
           </div>
           <div className="text-sm text-slate-400 mt-0.5">
-            {surebet.sport} · {surebet.league} · Data do Evento: {new Date(surebet.event_date).toLocaleDateString('pt-BR')}
+            {surebet.sport} · {surebet.league} · Data do Evento:{' '}
+            {new Date(surebet.event_date).toLocaleDateString('pt-BR')}
           </div>
         </div>
 
         <div className="flex items-center gap-4 text-right">
           <div>
             <div className="text-xs font-medium text-slate-400">Total Investido</div>
-            <div className="font-mono font-semibold text-white">{formatCurrency(surebet.total_stake)}</div>
+            <div className="font-mono font-semibold text-white">
+              {formatCurrency(surebet.total_stake)}
+            </div>
           </div>
           <div>
             <div className="text-xs font-medium text-slate-400">Lucro Garantido</div>
@@ -55,12 +70,14 @@ export function ActiveSurebetCard({ surebet, onResolve, onVoid }: ActiveSurebetC
           const isLost = leg.status === 'lost'
 
           return (
-            <div 
+            <div
               key={leg.leg_id}
               className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border ${
-                isWon ? 'bg-green-500/10 border-green-500/30' :
-                isLost ? 'bg-red-500/5 border-red-500/10 opacity-50' :
-                'bg-slate-900/50 border-slate-700/50 hover:border-slate-600'
+                isWon
+                  ? 'bg-green-500/10 border-green-500/30'
+                  : isLost
+                    ? 'bg-red-500/5 border-red-500/10 opacity-50'
+                    : 'bg-slate-900/50 border-slate-700/50 hover:border-slate-600'
               }`}
             >
               <div className="flex-1 mb-3 sm:mb-0">
@@ -77,18 +94,23 @@ export function ActiveSurebetCard({ surebet, onResolve, onVoid }: ActiveSurebetC
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                 <div>
-                  <div className="text-[10px] sm:text-xs text-slate-500 font-medium">STAKE (VALOR)</div>
+                  <div className="text-[10px] sm:text-xs text-slate-500 font-medium">
+                    STAKE (VALOR)
+                  </div>
                   <div className="font-mono text-sm font-semibold text-white">
                     {formatCurrency(leg.stake)}
                   </div>
                 </div>
-                
+
                 <div className="sm:text-right">
-                  <div className="text-[10px] sm:text-xs text-slate-500 font-medium">RETORNO BRUTO / LÍQUIDO</div>
+                  <div className="text-[10px] sm:text-xs text-slate-500 font-medium">
+                    RETORNO BRUTO / LÍQUIDO
+                  </div>
                   <div className="font-mono text-sm font-bold text-white">
                     {formatCurrency(potentialReturn)}{' '}
                     <span className={profit > 0 ? 'text-green-400' : 'text-slate-500'}>
-                      ({profit > 0 ? '+' : ''}{formatCurrency(profit)})
+                      ({profit > 0 ? '+' : ''}
+                      {formatCurrency(profit)})
                     </span>
                   </div>
                 </div>
