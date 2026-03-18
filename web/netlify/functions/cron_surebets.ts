@@ -1,5 +1,4 @@
 import type { Handler, Config } from '@netlify/functions'
-import { getStore } from '@netlify/blobs'
 import { createClient } from '@supabase/supabase-js'
 import { createHash } from 'crypto'
 import { Resend } from 'resend'
@@ -41,10 +40,15 @@ export const handler: Handler = async () => {
 
     // 2. Deduplication: compute a fingerprint and compare with the stored one
     const currentFingerprint = computeArbsFingerprint(arbs)
-    const store = getStore('cron-state')
-    const lastFingerprint = await store.get('last-surebet-fingerprint', { type: 'text' })
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-    if (lastFingerprint === currentFingerprint) {
+    const { data: stateRow } = await supabase
+      .from('cron_state')
+      .select('value')
+      .eq('key', 'last-surebet-fingerprint')
+      .maybeSingle()
+
+    if (stateRow?.value === currentFingerprint) {
       console.log(
         `Same surebets as last run (hash: ${currentFingerprint.slice(0, 8)}...). Skipping email.`
       )
@@ -83,7 +87,10 @@ export const handler: Handler = async () => {
     })
 
     // 6. Save fingerprint so next run can skip if nothing changed
-    await store.set('last-surebet-fingerprint', currentFingerprint)
+    await supabase.from('cron_state').upsert(
+      { key: 'last-surebet-fingerprint', value: currentFingerprint, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    )
 
     console.log(`Successfully sent email with ${arbs.length} surebets to ${emails.length} users.`)
     return { statusCode: 200, body: 'Email sent' }
