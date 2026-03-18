@@ -76,88 +76,101 @@ export const handler: Handler = async () => {
   }
 }
 
-interface Outcome {
+interface ArbLeg {
+  bookmaker: string
+  side: string
+  label: string
+  odds: string
+  directLink?: string
+}
+
+interface ArbMarket {
   name: string
-  price: number
+  hdp?: number
 }
 
-interface Market {
-  key: string
-  outcomes: Outcome[]
-}
-
-interface Bookmaker {
-  title: string
-  markets: Market[]
+interface ArbEvent {
+  home: string
+  away: string
+  date: string
+  league: string
+  sport: string
 }
 
 interface Surebet {
-  home_team: string
-  away_team: string
-  bookmakers: Bookmaker[]
+  id: string
+  market: ArbMarket
+  profitMargin: number
+  legs: ArbLeg[]
+  event?: ArbEvent
+}
+
+function getBetLineLabel(marketName: string, side: string, hdp?: number | null): string {
+  const market = (marketName || '').toUpperCase()
+  const line = hdp != null ? ` ${hdp > 0 ? '+' : ''}${hdp}` : ''
+
+  if (market === 'TOTALS' || market === 'TOTAL') {
+    if (side === 'over' || side === 'home') return `Over${line}`
+    if (side === 'under' || side === 'away') return `Under${line}`
+  }
+  if (market === 'SPREAD' || market === 'HANDICAP' || market === 'AH') {
+    return `Handicap${line} (${side})`
+  }
+  if (market.includes('CORNER')) {
+    if (side === 'over' || side === 'home') return `Over${line} Escanteios`
+    if (side === 'under' || side === 'away') return `Under${line} Escanteios`
+  }
+
+  return side
 }
 
 // Helper para formatar o email e calcular as stakes baseadas em 100 BRL
 function formatSurebetsEmail(arbs: Surebet[]): string {
   let html = `<div style="font-family: Arial, sans-serif; color: #333;">`
-  html += `<h2 style="color: #6366f1;">Encontramos Oportunidades de Arbitragem!</h2>`
+  html += `<h2 style="color: #6366f1;">🔥 Encontramos Oportunidades de Arbitragem!</h2>`
   html += `<p>Invista R$ 100 para garantir lucro em qualquer um dos cenários abaixo:</p><hr />`
 
   arbs.forEach((arb) => {
-    // Extraindo as pernas ("legs") dessa arbitragem
-    const legs: {
-      bookmaker: string
-      market: string
-      name: string
-      price: number
-    }[] = []
+    const event = arb.event
+    const eventName = event ? `${event.home} vs ${event.away}` : `Evento #${arb.id}`
+    const league = event ? `${event.sport} — ${event.league}` : ''
+    const profit = (arb.profitMargin ?? 0).toFixed(2)
+    const marketLabel = arb.market?.name ?? 'Mercado'
+    const hdp = arb.market?.hdp ?? null
 
-    if (arb.bookmakers) {
-      arb.bookmakers.forEach((bm) => {
-        if (bm.markets) {
-          bm.markets.forEach((market) => {
-            if (market.outcomes) {
-              market.outcomes.forEach((outcome) => {
-                legs.push({
-                  bookmaker: bm.title,
-                  market: market.key,
-                  name: outcome.name,
-                  price: outcome.price,
-                })
-              })
-            }
-          })
-        }
-      })
-    }
-
-    // Calcular lucro garantido
-    let impliedSum = 0
-    legs.forEach((l) => {
-      impliedSum += 1 / l.price
-    })
-    const profitMargin = ((1 - impliedSum) * 100).toFixed(2)
-
-    html += `<div style="margin-bottom: 24px; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">`
-    html += `<h3 style="margin: 0 0 8px 0; color: #1f2937;">⚽ ${arb.home_team} vs ${arb.away_team}</h3>`
-    html += `<span style="background-color: #10b981; color: white; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: bold;">Lucro +${profitMargin}%</span>`
-    html += `<ul style="list-style-type: none; padding: 0; margin-top: 12px;">`
+    const legs = arb.legs ?? []
 
     // Calcular stakes para o total de 100 Reais
+    const impliedSum = legs.reduce((sum, l) => sum + 1 / Number(l.odds), 0)
     const TOTAL_BANKROLL = 100
+
+    html += `<div style="margin-bottom: 24px; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">`
+    html += `<h3 style="margin: 0 0 4px 0; color: #1f2937;">${eventName}</h3>`
+    if (league)
+      html += `<p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280;">${league}</p>`
+    html += `<span style="background-color: #10b981; color: white; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: bold;">Lucro +${profit}%</span>`
+    html += `<p style="margin: 8px 0 4px 0; font-size: 12px; font-weight: bold; color: #374151;">Mercado: ${marketLabel}${hdp != null ? ` (linha ${hdp})` : ''}</p>`
+    html += `<ul style="list-style-type: none; padding: 0; margin-top: 8px;">`
+
     legs.forEach((leg) => {
-      const stake = (TOTAL_BANKROLL * (1 / leg.price)) / impliedSum
-      const ret = stake * leg.price
-      html += `<li style="margin-bottom: 8px; font-size: 14px;">`
-      html += `<strong>${leg.bookmaker}</strong> (${leg.market}): Aposta em <strong>${leg.name}</strong> @${leg.price.toFixed(2)}<br />`
-      html += `<span style="color: #6366f1;">💰 Apostar: R$ ${stake.toFixed(2)}</span> / Retorno: R$ ${ret.toFixed(2)}`
+      const odds = Number(leg.odds)
+      const stake = impliedSum > 0 ? (TOTAL_BANKROLL * (1 / odds)) / impliedSum : 0
+      const ret = stake * odds
+      const betLine = getBetLineLabel(marketLabel, leg.side, hdp)
+      const link = leg.directLink
+        ? ` <a href="${leg.directLink}" style="color:#6366f1;">→ Link</a>`
+        : ''
+
+      html += `<li style="margin-bottom: 10px; font-size: 14px; padding: 8px; background:#f9fafb; border-radius:6px;">`
+      html += `<strong>${leg.bookmaker}</strong>: <em>${betLine}</em> @${odds.toFixed(2)}<br />`
+      html += `<span style="color: #6366f1;">💰 Apostar: R$ ${stake.toFixed(2)}</span> → Retorno: <strong>R$ ${ret.toFixed(2)}</strong>${link}`
       html += `</li>`
     })
 
     html += `</ul></div>`
   })
 
-  html += `<p style="font-size: 12px; color: #6b7280; margin-top: 24px;">Este é um scan automático de surebets (roda a cada 6 minutos).</p>`
+  html += `<p style="font-size: 12px; color: #6b7280; margin-top: 24px;">Scan automático de surebets — verifica a cada minuto.</p>`
   html += `</div>`
 
   return html

@@ -46,6 +46,12 @@ export function SurebetCard({ surebet, onSave }: SurebetCardProps) {
         <span className="rounded bg-slate-700 px-2 py-0.5 text-slate-300">
           {surebet.market.name}
         </span>
+        {surebet.market.hdp != null && (
+          <span className="rounded bg-slate-700/60 px-2 py-0.5 text-slate-400">
+            Linha {surebet.market.hdp > 0 ? '+' : ''}
+            {surebet.market.hdp}
+          </span>
+        )}
         {surebet.event && (
           <span className="text-slate-500">{formatDateTime(surebet.event.date)}</span>
         )}
@@ -53,30 +59,51 @@ export function SurebetCard({ surebet, onSave }: SurebetCardProps) {
 
       {/* Legs */}
       <div className="space-y-1.5">
-        {surebet.legs.map((leg, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-lg bg-slate-700/50 px-3 py-2"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-white">{leg.bookmaker}</span>
-              <span className="text-xs text-slate-400 capitalize">{leg.label || leg.side}</span>
+        {surebet.legs.map((leg, i) => {
+          const hdp = surebet.market?.hdp
+          const marketName = (surebet.market?.name ?? '').toUpperCase()
+          let lineLabel = leg.label || leg.side
+
+          if (marketName === 'TOTALS' || marketName === 'TOTAL') {
+            const linePart = hdp != null ? ` ${hdp}` : ''
+            if (leg.side === 'over' || leg.side === 'home') lineLabel = `Over${linePart}`
+            else if (leg.side === 'under' || leg.side === 'away') lineLabel = `Under${linePart}`
+          } else if (marketName === 'SPREAD' || marketName === 'HANDICAP' || marketName === 'AH') {
+            const sign = hdp != null && hdp > 0 ? '+' : ''
+            const linePart = hdp != null ? ` ${sign}${hdp}` : ''
+            lineLabel = `Handicap${linePart} (${leg.side})`
+          } else if (marketName.includes('CORNER')) {
+            const linePart = hdp != null ? ` ${hdp}` : ''
+            if (leg.side === 'over' || leg.side === 'home') lineLabel = `Over${linePart} escanteios`
+            else if (leg.side === 'under' || leg.side === 'away')
+              lineLabel = `Under${linePart} escanteios`
+          }
+
+          return (
+            <div
+              key={i}
+              className="flex items-center justify-between rounded-lg bg-slate-700/50 px-3 py-2"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-white">{leg.bookmaker}</span>
+                <span className="text-xs text-slate-400">{lineLabel}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm font-semibold text-green-300">@{leg.odds}</span>
+                {leg.directLink && (
+                  <a
+                    href={leg.directLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-slate-500 hover:text-green-400 transition-colors"
+                  >
+                    <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-semibold text-green-300">@{leg.odds}</span>
-              {leg.directLink && (
-                <a
-                  href={leg.directLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-500 hover:text-green-400 transition-colors"
-                >
-                  <ExternalLink size={12} />
-                </a>
-              )}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Calculator Toggle */}
