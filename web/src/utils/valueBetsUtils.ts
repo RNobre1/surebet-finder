@@ -1,15 +1,25 @@
+/**
+ * A API retorna `expectedValue` como percentual bruto da razão entre a odd da casa e a odd justa.
+ * Ex: 118.8 significa que a odd é 118.8% da justa (18.8% de valor acima do justo).
+ * Para obter o EV% real, subtraímos 100.
+ * Ex: 118.8 → 18.8% de EV
+ */
 export function normalizeEv(expectedValue: number): number {
-  return expectedValue
+  return expectedValue - 100
 }
 
-export function formatEvPercentage(expectedValue: number): string {
-  const prefix = expectedValue > 0 ? '+' : ''
-  return `${prefix}${expectedValue.toFixed(2)}%`
+export function formatEvPercentage(evPercent: number): string {
+  const prefix = evPercent > 0 ? '+' : ''
+  return `${prefix}${evPercent.toFixed(2)}%`
 }
 
-export function getTrueOdds(bookmakerOdds: number, expectedValuePercentage: number): number {
-  if (!bookmakerOdds || expectedValuePercentage === undefined) return bookmakerOdds
-  const evDecimal = expectedValuePercentage / 100
+/**
+ * True odds = bookmakerOdds / (1 + EV/100)
+ * Com EV = 18.8%: trueOdds = 3.30 / 1.188 = 2.78 ✓
+ */
+export function getTrueOdds(bookmakerOdds: number, evPercent: number): number {
+  if (!bookmakerOdds) return bookmakerOdds
+  const evDecimal = evPercent / 100
   return bookmakerOdds / (evDecimal + 1)
 }
 

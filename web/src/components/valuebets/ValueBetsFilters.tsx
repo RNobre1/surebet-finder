@@ -158,7 +158,9 @@ export function ValueBetsFilters({
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs font-medium text-slate-400">EV% Máximo</label>
             <span className="text-xs font-mono font-bold text-purple-400">
-              +{maxEvFilter.toFixed(1)}%
+              {maxEvFilter === Infinity || maxEvFilter >= (maxEv > 0 ? maxEv : 30)
+                ? '∞'
+                : `+${maxEvFilter.toFixed(1)}%`}
             </span>
           </div>
           <input
@@ -166,13 +168,17 @@ export function ValueBetsFilters({
             min={0}
             max={maxEv > 0 ? maxEv : 30}
             step={0.5}
-            value={maxEvFilter}
-            onChange={(e) => setMaxEvFilter(Number(e.target.value))}
+            value={maxEvFilter === Infinity ? (maxEv > 0 ? maxEv : 30) : maxEvFilter}
+            onChange={(e) => {
+              const val = Number(e.target.value)
+              const top = maxEv > 0 ? maxEv : 30
+              setMaxEvFilter(val >= top ? Infinity : val)
+            }}
             className="w-full accent-purple-500 h-1.5 rounded cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-slate-600 mt-0.5">
             <span>+0%</span>
-            <span>+{maxEv > 0 ? maxEv : 30}%</span>
+            <span>∞</span>
           </div>
         </div>
       </div>
@@ -205,7 +211,9 @@ export function ValueBetsFilters({
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs font-medium text-slate-400">Odd Máxima</label>
             <span className="text-xs font-mono font-bold text-white">
-              @{maxOddFilter.toFixed(2)}
+              {maxOddFilter === Infinity || maxOddFilter >= (maxOdd > 0 ? maxOdd : 10)
+                ? '∞'
+                : `@${maxOddFilter.toFixed(2)}`}
             </span>
           </div>
           <input
@@ -213,13 +221,17 @@ export function ValueBetsFilters({
             min={1.0}
             max={maxOdd > 0 ? maxOdd : 10}
             step={0.05}
-            value={maxOddFilter}
-            onChange={(e) => setMaxOddFilter(Number(e.target.value))}
+            value={maxOddFilter === Infinity ? (maxOdd > 0 ? maxOdd : 10) : maxOddFilter}
+            onChange={(e) => {
+              const val = Number(e.target.value)
+              const top = maxOdd > 0 ? maxOdd : 10
+              setMaxOddFilter(val >= top ? Infinity : val)
+            }}
             className="w-full accent-purple-500 h-1.5 rounded cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-slate-600 mt-0.5">
             <span>@1.00</span>
-            <span>@{maxOdd > 0 ? maxOdd : 10}</span>
+            <span>∞</span>
           </div>
         </div>
       </div>

@@ -8,14 +8,15 @@ import {
 
 describe('Value Bets Utils', () => {
   describe('normalizeEv', () => {
-    it('mantém o valor original se ele já vier em base percentual normalizada pela API (ex: 5.2 significa 5.2%)', () => {
-      // Diferente de multiplicá-lo por 100 incorretamente
-      expect(normalizeEv(5.2)).toBe(5.2)
-      expect(normalizeEv(-2.1)).toBe(-2.1)
+    it('subtrai 100 do valor bruto da API para obter o EV real em %', () => {
+      // A API retorna 118.8 → significa 18.8% de valor acima do justo
+      expect(normalizeEv(118.8)).toBeCloseTo(18.8, 2)
+      expect(normalizeEv(105.2)).toBeCloseTo(5.2, 2)
+      expect(normalizeEv(100.0)).toBeCloseTo(0, 2)
     })
 
-    it('limita EVs obviamente quebrados na API (acima de 1000%) ou retorna eles corrigidos (opcional, aqui mantemos intactos se estiver no formato numérico sem multx100)', () => {
-      expect(normalizeEv(134.05)).toBe(134.05)
+    it('funciona com valores abaixo de 100 (sem valor)', () => {
+      expect(normalizeEv(97.5)).toBeCloseTo(-2.5, 2)
     })
   })
 
@@ -28,13 +29,15 @@ describe('Value Bets Utils', () => {
   })
 
   describe('getTrueOdds', () => {
-    it('calcula true odds corretamente baseando-se na expected_value e apostas', () => {
-      // EV = (Odds / TrueOdds) - 1 => TrueOdds = Odds / (1 + EV)
-      // Usando EV de 5% (0.05 decimal) e odd 2.10
+    it('calcula true odds corretamente: trueOdds = bookmakerOdds / (1 + ev/100)', () => {
+      // EV = 18.8% (API retorna 118.8, normalizeEv retorna 18.8)
+      // trueOdds = 3.30 / (1 + 0.188) = 3.30 / 1.188 ≈ 2.78
+      expect(getTrueOdds(3.3, 18.8)).toBeCloseTo(2.78, 1)
+      // EV = 5%: trueOdds = 2.10 / 1.05 ≈ 2.00
       expect(getTrueOdds(2.1, 5.0)).toBeCloseTo(2.0, 2)
     })
 
-    it('lida graciosamente com odds vazias', () => {
+    it('retorna 0 quando odds são 0', () => {
       expect(getTrueOdds(0, 5)).toBe(0)
     })
   })
