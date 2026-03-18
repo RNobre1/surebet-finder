@@ -24,17 +24,27 @@ describe('Netlify Function: valuebets', () => {
   })
 
   it('fetches value bets, merges, and sorts them by expectedValue', async () => {
-    // 2 bookmakers * 5 sports = 10 calls
-    // We will return data for just two specific calls and empty arrays for others
+    // 2 bookmakers = 2 calls
     let callCount = 0
     vi.mocked(fetch).mockImplementation(async () => {
       callCount++
-      if (callCount === 1)
-        return { ok: true, json: async () => [{ id: '1', expectedValue: 3.5 }] } as Response
-      if (callCount === 5)
-        return { ok: true, json: async () => [{ id: '2', expectedValue: 5.2 }] } as Response
-      if (callCount === 9)
-        return { ok: true, json: async () => [{ id: '3', expectedValue: 1.1 }] } as Response
+      if (callCount === 1) {
+        // Betano response
+        return {
+          ok: true,
+          json: async () => [
+            { id: '1', expectedValue: 3.5 },
+            { id: '3', expectedValue: 1.1 },
+          ],
+        } as Response
+      }
+      if (callCount === 2) {
+        // Bet365 response
+        return {
+          ok: true,
+          json: async () => [{ id: '2', expectedValue: 5.2 }],
+        } as Response
+      }
       return { ok: true, json: async () => [] } as Response
     })
 
@@ -52,7 +62,7 @@ describe('Netlify Function: valuebets', () => {
     expect(body[1].expectedValue).toBe(3.5)
     expect(body[2].expectedValue).toBe(1.1)
 
-    // Total calls should be 2 * 5 = 10
-    expect(fetch).toHaveBeenCalledTimes(10)
+    // Total calls should be 2 (one per bookmaker)
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })
