@@ -1,0 +1,235 @@
+﻿
+> web@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mC:/Users/scorp/OneDrive/├ürea de Trabalho/Projetos/surebet/surebet-finder/web[39m
+
+ [31mÔØ»[39m src/__tests__/functions/valuebets.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 137[2mms[22m[39m
+     [32mÔ£ô[39m returns 500 if ODDS_API_KEY is not set[32m 44[2mms[22m[39m
+[31m     [31m├ù[31m fetches value bets, merges, and sorts them by expectedValue[39m[32m 61[2mms[22m[39m
+ [31mÔØ»[39m src/__tests__/functions/surebets.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 144[2mms[22m[39m
+     [32mÔ£ô[39m returns 500 if ODDS_API_KEY is not set[32m 47[2mms[22m[39m
+[31m     [31m├ù[31m fetches surebets and merges results successfully[39m[32m 66[2mms[22m[39m
+[31m     [31m├ù[31m handles fetch errors gracefully and maps to empty array[39m[32m 16[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/utils/formatDate.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 228[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/utils/calculateStakes.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/utils/formatCurrency.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useBookmakerAccounts.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 203[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useValueBets.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 243[2mms[22m[39m
+ [31mÔØ»[39m src/__tests__/hooks/useTransactions.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 141[2mms[22m[39m
+     [32mÔ£ô[39m aggregates total profit and deposits correctly[32m 92[2mms[22m[39m
+[31m     [31m├ù[31m generates chart data correctly for month period[39m[32m 36[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useFreeBets.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 120[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/hooks/useSurebets.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 136[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/components/FreeBetAlert.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 361[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/components/SurebetCard.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 336[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/components/StakeCalculator.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 749[2mms[22m[39m
+     [33m[2mÔ£ô[22m[39m renders input field and calculate button [33m 550[2mms[22m[39m
+node.exe : 
+No C:\Program 
+Files\nodejs\npm.ps1:29 
+caractere:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : N 
+   otSpecified: (:String) [],   
+  RemoteException
+    + FullyQualifiedErrorId : N 
+   ativeCommandError
+ 
+[31mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[39m
+[1m[41m Failed Tests 4 [49m[2
+2m[31mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[39
+m
+
+[41m[1m FAIL [22m[49m src/__
+tests__/functions/surebets.test.
+ts[2m > [22mNetlify Function: 
+surebets[2m > [22mfetches 
+surebets and merges results 
+successfully
+[31m[1mAssertionError[22m: 
+expected 500 to be 200 // 
+Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 500[39m
+
+[36m [2mÔØ»[22m src/__tests__
+/functions/surebets.test.ts:[2m
+40:34[22m[39m
+    [90m 38|[39m     
+[35mconst[39m response 
+[33m=[39m [35mawait[39m 
+[34mhandler[39m({} 
+[35mas[39m any[33m,[39m {} 
+[35mas[39m any)
+    [90m 39|[39m
+    [90m 40|[39m     [34mexpe
+ct[39m(response[33m?.[39mstat
+usCode)[33m.[39m[34mtoBe[39m
+([34m200[39m)
+    [90m   |[39m              
+                    [31m^[39m
+    [90m 41|[39m     
+[35mconst[39m body 
+[33m=[39m [33mJSON[39m[33m.
+[39m[34mparse[39m(response[3
+3m?.[39mbody [33m||[39m 
+[32m'[]'[39m)
+    [90m 42|[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ
+»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»Ô
+Ä»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/4]ÔÄ»[22m[
+39m
+
+[41m[1m FAIL [22m[49m src/__
+tests__/functions/surebets.test.
+ts[2m > [22mNetlify Function: 
+surebets[2m > [22mhandles 
+fetch errors gracefully and 
+maps to empty array
+[31m[1mAssertionError[22m: 
+expected 500 to be 200 // 
+Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 500[39m
+
+[36m [2mÔØ»[22m src/__tests__
+/functions/surebets.test.ts:[2m
+66:34[22m[39m
+    [90m 64|[39m     
+[35mconst[39m response 
+[33m=[39m [35mawait[39m 
+[34mhandler[39m({} 
+[35mas[39m any[33m,[39m {} 
+[35mas[39m any)
+    [90m 65|[39m
+    [90m 66|[39m     [34mexpe
+ct[39m(response[33m?.[39mstat
+usCode)[33m.[39m[34mtoBe[39m
+([34m200[39m)
+    [90m   |[39m              
+                    [31m^[39m
+    [90m 67|[39m     
+[35mconst[39m body 
+[33m=[39m [33mJSON[39m[33m.
+[39m[34mparse[39m(response[3
+3m?.[39mbody [33m||[39m 
+[32m'[]'[39m)
+    [90m 68|[39m     [90m// 
+1 failed, 4 succeeded[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ
+»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»Ô
+Ä»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/4]ÔÄ»[22m[
+39m
+
+[41m[1m FAIL [22m[49m src/__
+tests__/functions/valuebets.test
+.ts[2m > [22mNetlify 
+Function: valuebets[2m > 
+[22mfetches value bets, 
+merges, and sorts them by 
+expectedValue
+[31m[1mAssertionError[22m: 
+expected 500 to be 200 // 
+Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 200[39m
+[31m+ 500[39m
+
+[36m [2mÔØ»[22m src/__tests__
+/functions/valuebets.test.ts:[2
+m41:34[22m[39m
+    [90m 39|[39m     
+[35mconst[39m response 
+[33m=[39m [35mawait[39m 
+[34mhandler[39m({} 
+[35mas[39m any[33m,[39m {} 
+[35mas[39m any)
+    [90m 40|[39m
+    [90m 41|[39m     [34mexpe
+ct[39m(response[33m?.[39mstat
+usCode)[33m.[39m[34mtoBe[39m
+([34m200[39m)
+    [90m   |[39m              
+                    [31m^[39m
+    [90m 42|[39m     
+[35mconst[39m body 
+[33m=[39m [33mJSON[39m[33m.
+[39m[34mparse[39m(response[3
+3m?.[39mbody [33m||[39m 
+[32m'[]'[39m)
+    [90m 43|[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ
+»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»Ô
+Ä»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[3/4]ÔÄ»[22m[
+39m
+
+[41m[1m FAIL [22m[49m src/__
+tests__/hooks/useTransactions.te
+st.ts[2m > 
+[22museTransactions[2m > 
+[22mgenerates chart data 
+correctly for month period
+[31m[1mAssertionError[22m: 
+expected +0 to be 1000 // 
+Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1000[39m
+[31m+ 0[39m
+
+[36m [2mÔØ»[22m src/__tests__
+/hooks/useTransactions.test.ts:
+[2m78:33[22m[39m
+    [90m 76|[39m     
+[35mconst[39m week1Data 
+[33m=[39m chartData[33m.[39m
+[34mfind[39m(d [33m=>[39m 
+d[33m.[39mlabel [33m===[39m 
+[32m'Sem 1'[39m)
+    [90m 77|[39m     [34mexpe
+ct[39m(week1Data)[33m.[39m[3
+4mtoBeDefined[39m()
+    [90m 78|[39m     [34mexpe
+ct[39m(week1Data[33m?.[39mdep
+osits)[33m.[39m[34mtoBe[39m(
+[34m1000[39m)
+    [90m   |[39m              
+                   [31m^[39m
+    [90m 79|[39m     [34mexpe
+ct[39m(week1Data[33m?.[39mpro
+fit)[33m.[39m[34mtoBe[39m([
+34m50[39m)
+    [90m 80|[39m
+
+[31m[2mÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ
+»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»Ô
+Ä»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[4/4]ÔÄ»[22m[
+39m
+
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m58 passed[39m[22m[90m (62)[39m
+[2m   Start at [22m 23:53:25
+[2m   Duration [22m 7.79s[2m (transform 5.44s, setup 17.83s, import 25.10s, tests 2.95s, environment 33.87s)[22m
+
