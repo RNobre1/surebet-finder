@@ -46,8 +46,13 @@ describe('useValueBets', () => {
   })
 
   it('loads value bets and sorts by expectedValue descending', async () => {
-    const lowEV: ApiValueBet = { ...mockValueBet, id: 'vb-2', expectedValue: 0.01 }
-    const highEV: ApiValueBet = { ...mockValueBet, id: 'vb-1', expectedValue: 0.052 }
+    const lowEV: ApiValueBet = { ...mockValueBet, id: 'vb-2', expectedValue: 0.01, betSide: 'away' }
+    const highEV: ApiValueBet = {
+      ...mockValueBet,
+      id: 'vb-1',
+      expectedValue: 0.052,
+      betSide: 'home',
+    }
 
     mockFetch.mockResolvedValue({
       ok: true,

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { ApiValueBet } from '../types'
+import { removeDuplicateValueBets } from '../utils/valueBetsUtils'
 
 interface UseValueBetsState {
   valueBets: ApiValueBet[]
@@ -22,10 +23,9 @@ export function useValueBets(): UseValueBetsState {
         throw new Error(`Erro ${res.status} ao buscar value bets`)
       }
       const data: ApiValueBet[] = await res.json()
-      // Sort descending by expectedValue
-      const sorted = Array.isArray(data)
-        ? [...data].sort((a, b) => b.expectedValue - a.expectedValue)
-        : []
+      // Sort descending by expectedValue and remove duplicates
+      const uniqueData = Array.isArray(data) ? removeDuplicateValueBets(data) : []
+      const sorted = [...uniqueData].sort((a, b) => b.expectedValue - a.expectedValue)
       setValueBets(sorted)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido')

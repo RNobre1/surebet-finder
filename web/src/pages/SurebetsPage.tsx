@@ -2,16 +2,49 @@ import { useState } from 'react'
 import { Zap, RefreshCw, AlertCircle } from 'lucide-react'
 import { useSurebets } from '../hooks/useSurebets'
 import { SurebetCard } from '../components/surebets/SurebetCard'
+import { SurebetsFilters } from '../components/surebets/SurebetsFilters'
+import { Pagination } from '../components/ui/Pagination'
 
 const MONITORED_BOOKMAKERS = ['Betano', 'Bet365']
+const ITEMS_PER_PAGE = 15
 
 export function SurebetsPage() {
   const { surebets, loading, error, fetch } = useSurebets()
   const [hasFetched, setHasFetched] = useState(false)
 
+  // Filters State
+  const [sportFilter, setSportFilter] = useState('All')
+  const [minMarginFilter, setMinMarginFilter] = useState(0)
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+
   const handleFetch = async () => {
+    setCurrentPage(1)
     await fetch()
     setHasFetched(true)
+  }
+
+  // Obter opcoes unicas para filtros
+  const availableSports = Array.from(new Set(surebets.map((s) => s.event?.sport || 'Unknown')))
+
+  // Aplicar filtros
+  const filteredBets = surebets.filter((s) => {
+    const sportMatch = sportFilter === 'All' || s.event?.sport === sportFilter
+    const marginMatch = (s.profitMargin ?? 0) >= minMarginFilter
+    return sportMatch && marginMatch
+  })
+
+  // Paginar resultados
+  const totalPages = Math.ceil(filteredBets.length / ITEMS_PER_PAGE)
+  const paginatedBets = filteredBets.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  // Auto-reset
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(1)
   }
 
   return (
@@ -71,14 +104,35 @@ export function SurebetsPage() {
       )}
 
       {surebets.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-sm text-slate-400">
-            {surebets.length} oportunidade{surebets.length !== 1 ? 's' : ''} encontrada
-            {surebets.length !== 1 ? 's' : ''}
+        <div className="space-y-4">
+          <SurebetsFilters
+            sportFilter={sportFilter}
+            setSportFilter={setSportFilter}
+            minMarginFilter={minMarginFilter}
+            setMinMarginFilter={setMinMarginFilter}
+            availableSports={availableSports}
+          />
+
+          <p className="text-sm text-slate-400 flex items-center justify-between">
+            <span>
+              Mostrando {paginatedBets.length} de {filteredBets.length} resultados filtrados (total
+              original: {surebets.length})
+            </span>
           </p>
-          {surebets.map((s) => (
-            <SurebetCard key={s.id} surebet={s} />
-          ))}
+
+          <div className="space-y-3">
+            {paginatedBets.map((s) => (
+              <SurebetCard key={s.id} surebet={s} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       )}
     </div>

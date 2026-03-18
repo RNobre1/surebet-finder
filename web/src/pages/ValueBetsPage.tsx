@@ -2,16 +2,54 @@ import { useState } from 'react'
 import { TrendingUp, RefreshCw, ExternalLink, AlertCircle } from 'lucide-react'
 import { useValueBets } from '../hooks/useValueBets'
 import { formatDateTime } from '../utils/formatDate'
+import { ValueBetsFilters } from '../components/valuebets/ValueBetsFilters'
+import { Pagination } from '../components/ui/Pagination'
+import { normalizeEv, formatEvPercentage, getTrueOdds } from '../utils/valueBetsUtils'
 
 const MONITORED_BOOKMAKERS = ['Betano', 'Bet365']
+const ITEMS_PER_PAGE = 15
 
 export function ValueBetsPage() {
   const { valueBets, loading, error, fetch } = useValueBets()
   const [hasFetched, setHasFetched] = useState(false)
 
+  // Filters State
+  const [sportFilter, setSportFilter] = useState('All')
+  const [bookmakerFilter, setBookmakerFilter] = useState('All')
+  const [minEvFilter, setMinEvFilter] = useState(0)
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+
   const handleFetch = async () => {
+    setCurrentPage(1)
     await fetch()
     setHasFetched(true)
+  }
+
+  // Obter opcoes unicas para filtros baseadas nos dados originais
+  const availableSports = Array.from(new Set(valueBets.map((vb) => vb.event?.sport || 'Unknown')))
+  const availableBookmakers = Array.from(new Set(valueBets.map((vb) => vb.bookmaker)))
+
+  // Aplicar filtros
+  const filteredBets = valueBets.filter((vb) => {
+    const sportMatch = sportFilter === 'All' || vb.event?.sport === sportFilter
+    const bookmakerMatch = bookmakerFilter === 'All' || vb.bookmaker === bookmakerFilter
+    const rawEv = normalizeEv(vb.expectedValue ?? 0)
+    const evMatch = rawEv >= minEvFilter
+    return sportMatch && bookmakerMatch && evMatch
+  })
+
+  // Aplicar paginacao
+  const totalPages = Math.ceil(filteredBets.length / ITEMS_PER_PAGE)
+  const paginatedBets = filteredBets.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  // Reset pagina ao mudar filtros caso fique vazio
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(1)
   }
 
   return (
@@ -71,10 +109,23 @@ export function ValueBetsPage() {
 
       {/* Results table */}
       {valueBets.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm text-slate-400">
-            {valueBets.length} value bet{valueBets.length !== 1 ? 's' : ''} encontrada
-            {valueBets.length !== 1 ? 's' : ''}, ordenadas por EV
+        <div className="space-y-4">
+          <ValueBetsFilters
+            sportFilter={sportFilter}
+            setSportFilter={setSportFilter}
+            bookmakerFilter={bookmakerFilter}
+            setBookmakerFilter={setBookmakerFilter}
+            minEvFilter={minEvFilter}
+            setMinEvFilter={setMinEvFilter}
+            availableSports={availableSports}
+            availableBookmakers={availableBookmakers}
+          />
+
+          <p className="text-sm text-slate-400 flex items-center justify-between">
+            <span>
+              Mostrando {paginatedBets.length} de {filteredBets.length} resultados filtrados (total
+              original: {valueBets.length})
+            </span>
           </p>
           <div className="rounded-xl border border-slate-700 overflow-hidden">
             <table className="w-full text-sm">
@@ -83,18 +134,25 @@ export function ValueBetsPage() {
                   <th className="px-4 py-3 text-left">Evento</th>
                   <th className="px-4 py-3 text-left">Casa</th>
                   <th className="px-4 py-3 text-left">Mercado</th>
-                  <th className="px-4 py-3 text-right">Odd</th>
+                  <th className="px-4 py-3 text-right">Odd Ofertada</th>
+                  <th className="px-4 py-3 text-right">Odd Justa</th>
                   <th className="px-4 py-3 text-right">EV%</th>
-                  <th className="px-4 py-3 text-center">Link</th>
+                  <th className="px-4 py-3 text-center" title="Link Direto">
+                    Link
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {valueBets.map((vb) => {
+                {paginatedBets.map((vb) => {
                   const odds = vb.bookmakerOdds?.[vb.betSide as keyof typeof vb.bookmakerOdds]
                   const directLink = vb.bookmakerOdds?.[
                     `${vb.betSide}DirectLink` as keyof typeof vb.bookmakerOdds
                   ] as string | undefined
-                  const ev = ((vb.expectedValue ?? 0) * 100).toFixed(2)
+
+                  const evRaw = normalizeEv(vb.expectedValue ?? 0)
+                  const evFormatted = formatEvPercentage(evRaw)
+                  const trueOdd = getTrueOdds(Number(odds) || 0, evRaw)
+
                   return (
                     <tr
                       key={vb.id}
@@ -108,7 +166,7 @@ export function ValueBetsPage() {
                         </div>
                         {vb.event && (
                           <div className="text-xs text-slate-500">
-                            {vb.event.league} · {formatDateTime(vb.event.date)}
+                            {vb.event.sport} · {vb.event.league} · {formatDateTime(vb.event.date)}
                           </div>
                         )}
                       </td>
@@ -120,10 +178,16 @@ export function ValueBetsPage() {
                         <span className="ml-1 text-xs text-slate-500 capitalize">{vb.betSide}</span>
                       </td>
                       <td className="px-4 py-3 text-right font-mono font-semibold text-white">
-                        {odds ? `@${odds}` : '—'}
+                        {odds ? `@${Number(odds).toFixed(2)}` : '—'}
+                      </td>
+                      <td
+                        className="px-4 py-3 text-right font-mono text-slate-400"
+                        title="True Odds estimada baseada no Expected Value"
+                      >
+                        {trueOdd ? `@${trueOdd.toFixed(2)}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="font-bold text-purple-400">+{ev}%</span>
+                        <span className="font-bold text-purple-400">{evFormatted}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {directLink ? (
@@ -145,6 +209,14 @@ export function ValueBetsPage() {
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       )}
     </div>
