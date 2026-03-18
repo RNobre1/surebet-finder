@@ -13,21 +13,27 @@ vi.mock('resend', () => {
 })
 
 const mockListUsers = vi.fn()
+const mockCronStateSelect = vi.fn().mockReturnValue({
+  eq: vi.fn().mockReturnValue({
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+  }),
+})
+const mockCronStateUpsert = vi.fn().mockResolvedValue({ error: null })
+const mockFrom = vi.fn((table: string) => {
+  if (table === 'cron_state') {
+    return { select: mockCronStateSelect, upsert: mockCronStateUpsert }
+  }
+  return {}
+})
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn().mockReturnValue({
     auth: { admin: { listUsers: () => mockListUsers() } },
+    from: mockFrom,
   }),
 }))
 
 vi.mock('../../../netlify/lib/surebetsFetcher', () => ({
   fetchSurebetsFromApi: vi.fn(),
-}))
-
-// Mock Netlify Blobs: simulates no stored fingerprint so emails are always sent in tests
-const mockBlobGet = vi.fn().mockResolvedValue(null)
-const mockBlobSet = vi.fn().mockResolvedValue(undefined)
-vi.mock('@netlify/blobs', () => ({
-  getStore: vi.fn(() => ({ get: mockBlobGet, set: mockBlobSet })),
 }))
 
 describe('Cron Surebets Scheduled Function', () => {
