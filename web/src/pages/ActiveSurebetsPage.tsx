@@ -1,12 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CheckSquare, Plus, AlertCircle } from 'lucide-react'
 import { useActiveSurebets } from '../hooks/useActiveSurebets'
+import { useBookmakerAccounts } from '../hooks/useBookmakerAccounts'
+import { supabase } from '../lib/supabase'
 import { ActiveSurebetCard } from '../components/surebets/ActiveSurebetCard'
 import { AddActiveSurebetModal } from '../components/surebets/AddActiveSurebetModal'
 
 export function ActiveSurebetsPage() {
   const { activeSurebets, loading, error, resolveLeg, voidSurebet } = useActiveSurebets()
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Resolve userId para o useBookmakerAccounts
+  const [userId, setUserId] = useState<string | null>(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
+  }, [])
+
+  const { accounts } = useBookmakerAccounts(userId)
+
+  // Mapa id -> nome para resolver o UUID das pernas no card
+  const bookmakerNames: Record<string, string> = Object.fromEntries(
+    accounts.map((a) => [a.id, a.name])
+  )
 
   // Empty states
   if (loading && activeSurebets.length === 0) {
@@ -66,7 +81,8 @@ export function ActiveSurebetsPage() {
               <ActiveSurebetCard
                 key={bet.id}
                 surebet={bet}
-                onResolve={(legId) => resolveLeg(bet.id, bet, legId)}
+                bookmakerNames={bookmakerNames}
+                onResolve={(legId: string) => resolveLeg(bet.id, bet, legId)}
                 onVoid={() => voidSurebet(bet.id, bet)}
               />
             ))}

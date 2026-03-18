@@ -4,11 +4,17 @@ import { formatCurrency } from '../../utils/formatCurrency'
 
 interface ActiveSurebetCardProps {
   surebet: SurebetHistory
+  bookmakerNames: Record<string, string> // id -> name
   onResolve: (winningLegId: string) => void
   onVoid: () => void
 }
 
-export function ActiveSurebetCard({ surebet, onResolve, onVoid }: ActiveSurebetCardProps) {
+export function ActiveSurebetCard({
+  surebet,
+  bookmakerNames,
+  onResolve,
+  onVoid,
+}: ActiveSurebetCardProps) {
   const isSettled = surebet.status === 'settled'
   const isVoid = surebet.status === 'void'
 
@@ -88,7 +94,10 @@ export function ActiveSurebetCard({ surebet, onResolve, onVoid }: ActiveSurebetC
                   </span>
                 </div>
                 <div className="text-xs text-slate-400">
-                  Aposta em <span className="font-bold text-slate-300">{leg.bookmaker_id}</span>
+                  Aposta em{' '}
+                  <span className="font-bold text-slate-300">
+                    {bookmakerNames[leg.bookmaker_id] ?? leg.bookmaker_id}
+                  </span>
                 </div>
               </div>
 

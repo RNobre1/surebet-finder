@@ -1,5 +1,14 @@
-import { useState, useMemo } from 'react'
-import { TrendingUp, Wallet, Gift, Percent, BarChart2 } from 'lucide-react'
+import { useState } from 'react'
+import {
+  TrendingUp,
+  Wallet,
+  Gift,
+  Percent,
+  BarChart2,
+  Target,
+  ArrowUpRight,
+  Activity,
+} from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -15,7 +24,9 @@ import {
 import { useTransactions } from '../hooks/useTransactions'
 import { useBookmakerAccounts } from '../hooks/useBookmakerAccounts'
 import { useFreeBets } from '../hooks/useFreeBets'
+import { useActiveSurebets } from '../hooks/useActiveSurebets'
 import { formatCurrency } from '../utils/formatCurrency'
+import type { ActiveSurebetLeg } from '../types'
 
 interface DashboardPageProps {
   userId: string
@@ -27,30 +38,34 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const { totalProfit, totalDeposited, getChartData } = useTransactions(userId)
   const { accounts } = useBookmakerAccounts(userId)
   const { freeBets, expiringFreeBets } = useFreeBets(userId)
+  const { activeSurebets } = useActiveSurebets()
   const [period, setPeriod] = useState<Period>('month')
 
-  const totalAllocated = useMemo(
-    () => accounts.filter((a) => a.is_active).reduce((s, a) => s + a.balance, 0),
-    [accounts]
-  )
+  // ----- derived values (sem useMemo para não conflitar com o React Compiler) -----
+  const totalAllocated = accounts.filter((a) => a.is_active).reduce((s, a) => s + a.balance, 0)
+  const roi = totalDeposited > 0 ? (totalProfit / totalDeposited) * 100 : 0
+  const openFreeBetsValue = freeBets.filter((fb) => !fb.is_used).reduce((s, fb) => s + fb.amount, 0)
+  const chartData = getChartData(period)
+  const activeSortedAccounts = [...accounts]
+    .filter((a) => a.is_active)
+    .sort((a, b) => b.balance - a.balance)
 
-  const roi = useMemo(
-    () => (totalDeposited > 0 ? (totalProfit / totalDeposited) * 100 : 0),
-    [totalDeposited, totalProfit]
-  )
+  // ----- Active Surebets Metrics -----
+  const activeOnly = activeSurebets.filter((s) => s.status === 'active')
 
-  const openFreeBetsValue = useMemo(
-    () => freeBets.filter((fb) => !fb.is_used).reduce((s, fb) => s + fb.amount, 0),
-    [freeBets]
-  )
+  const activeTotalStaked = activeOnly.reduce((sum, s) => sum + s.total_stake, 0)
 
-  const chartData = useMemo(() => getChartData(period), [getChartData, period])
+  // Para cada aposta ativa, o retorno esperado é o menor retorno bruto entre as pernas
+  // (a quantia que receberemos independente do resultado)
+  const activeExpectedReturn = activeOnly.reduce((sum, s) => {
+    if (!s.legs || s.legs.length === 0) return sum
+    const minReturn = Math.min(...(s.legs as ActiveSurebetLeg[]).map((l) => l.stake * l.odds))
+    return sum + minReturn
+  }, 0)
 
-  const activeSortedAccounts = useMemo(
-    () => [...accounts].filter((a) => a.is_active).sort((a, b) => b.balance - a.balance),
-    [accounts]
-  )
+  const activeExpectedProfit = activeExpectedReturn - activeTotalStaked
 
+  // ----- Stats cards -----
   const stats = [
     {
       label: 'Total alocado',
@@ -58,6 +73,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       icon: Wallet,
       color: 'text-green-400',
       bg: 'bg-green-500/15',
+      border: 'border-green-500/20',
     },
     {
       label: 'Lucro total',
@@ -65,6 +81,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       icon: TrendingUp,
       color: 'text-blue-400',
       bg: 'bg-blue-500/15',
+      border: 'border-blue-500/20',
     },
     {
       label: 'ROI',
@@ -72,6 +89,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       icon: Percent,
       color: 'text-purple-400',
       bg: 'bg-purple-500/15',
+      border: 'border-purple-500/20',
     },
     {
       label: 'Free bets abertas',
@@ -79,6 +97,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       icon: Gift,
       color: 'text-amber-400',
       bg: 'bg-amber-500/15',
+      border: 'border-amber-500/20',
     },
   ]
 
@@ -92,7 +111,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
+          <div key={s.label} className={`rounded-2xl border ${s.border} bg-slate-800/60 p-4`}>
             <div
               className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${s.bg} mb-3`}
             >
@@ -103,6 +122,98 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           </div>
         ))}
       </div>
+
+      {/* Active Surebets Metrics */}
+      {activeOnly.length > 0 && (
+        <div className="rounded-2xl border border-purple-500/20 bg-purple-900/10 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity size={16} className="text-purple-400" />
+            <h3 className="text-sm font-semibold text-white">
+              Apostas Ativas Agora{' '}
+              <span className="ml-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 text-xs font-bold text-purple-300">
+                {activeOnly.length}
+              </span>
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Total em jogo */}
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-4 flex items-center gap-3">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-orange-500/15 shrink-0">
+                <Target size={18} className="text-orange-400" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Total em Jogo</p>
+                <p className="text-lg font-bold font-mono text-white">
+                  {formatCurrency(activeTotalStaked)}
+                </p>
+              </div>
+            </div>
+
+            {/* Retorno esperado */}
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-4 flex items-center gap-3">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-500/15 shrink-0">
+                <ArrowUpRight size={18} className="text-blue-400" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Retorno Esperado</p>
+                <p className="text-lg font-bold font-mono text-blue-300">
+                  {formatCurrency(activeExpectedReturn)}
+                </p>
+              </div>
+            </div>
+
+            {/* Lucro esperado */}
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-4 flex items-center gap-3">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/15 shrink-0">
+                <TrendingUp size={18} className="text-green-400" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Lucro Esperado</p>
+                <p
+                  className={`text-lg font-bold font-mono ${activeExpectedProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                >
+                  {activeExpectedProfit >= 0 ? '+' : ''}
+                  {formatCurrency(activeExpectedProfit)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Mini lista das apostas ativas */}
+          <div className="mt-4 space-y-2">
+            {activeOnly.map((s) => {
+              const legs = s.legs as ActiveSurebetLeg[]
+              const expectedReturn = legs.length
+                ? Math.min(...legs.map((l) => l.stake * l.odds))
+                : 0
+              const profit = expectedReturn - s.total_stake
+              return (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between rounded-lg bg-slate-900/40 border border-slate-700/30 px-3 py-2 text-sm"
+                >
+                  <div>
+                    <span className="font-medium text-white">{s.event_name}</span>
+                    <span className="ml-2 text-xs text-slate-500">{legs.length} pernas</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs font-mono">
+                    <span className="text-slate-400">
+                      {formatCurrency(s.total_stake)} apostados
+                    </span>
+                    <span
+                      className={`font-bold ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                    >
+                      {profit >= 0 ? '+' : ''}
+                      {formatCurrency(profit)} lucro
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Period selector */}
       <div className="flex gap-1 rounded-xl bg-slate-800 p-1 w-fit">
