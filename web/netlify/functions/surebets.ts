@@ -1,6 +1,6 @@
 import type { Handler } from '@netlify/functions'
+import { fetchSurebetsFromApi } from '../lib/surebetsFetcher'
 
-const ODDS_API_BASE = 'https://api.odds-api.io/v3'
 const BOOKMAKERS = 'Betano,Bet365'
 const SPORTS = ['football', 'basketball', 'american-football', 'tennis', 'volleyball']
 
@@ -11,20 +11,7 @@ export const handler: Handler = async () => {
     return { statusCode: 500, body: JSON.stringify({ error: 'ODDS_API_KEY not set' }) }
   }
 
-  const results = await Promise.allSettled(
-    SPORTS.map((sport) => {
-      const url = new URL(`${ODDS_API_BASE}/arbitrage-bets`)
-      url.searchParams.set('apiKey', API_KEY)
-      url.searchParams.set('bookmakers', BOOKMAKERS)
-      url.searchParams.set('sport', sport)
-      url.searchParams.set('includeEventDetails', 'true')
-      return fetch(url.toString()).then((r) => (r.ok ? r.json() : []))
-    })
-  )
-
-  const arbs = results.flatMap((r) =>
-    r.status === 'fulfilled' && Array.isArray(r.value) ? r.value : []
-  )
+  const arbs = await fetchSurebetsFromApi(API_KEY, SPORTS, BOOKMAKERS)
 
   return {
     statusCode: 200,
