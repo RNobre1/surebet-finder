@@ -28,7 +28,10 @@ export const handler: Handler = async () => {
 
     // 2. Fetch users to notify
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    const { data: { users }, error } = await supabase.auth.admin.listUsers()
+    const {
+      data: { users },
+      error,
+    } = await supabase.auth.admin.listUsers()
 
     if (error || !users) {
       console.error('Failed to fetch users from Supabase', error)
@@ -56,10 +59,31 @@ export const handler: Handler = async () => {
 
     console.log(`Successfully sent email with ${arbs.length} surebets to ${emails.length} users.`)
     return { statusCode: 200, body: 'Email sent' }
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error executing cron_surebets:', err)
     return { statusCode: 500, body: 'Internal Server Error' }
   }
+}
+
+interface Outcome {
+  name: string
+  price: number
+}
+
+interface Market {
+  key: string
+  outcomes: Outcome[]
+}
+
+interface Bookmaker {
+  title: string
+  markets: Market[]
+}
+
+interface Surebet {
+  home_team: string
+  away_team: string
+  bookmakers: Bookmaker[]
 }
 
 // Netlify configuration for Scheduled Functions
@@ -68,26 +92,31 @@ export const config = {
 }
 
 // Helper para formatar o email e calcular as stakes baseadas em 100 BRL
-function formatSurebetsEmail(arbs: any[]): string {
+function formatSurebetsEmail(arbs: Surebet[]): string {
   let html = `<div style="font-family: Arial, sans-serif; color: #333;">`
   html += `<h2 style="color: #6366f1;">Encontramos Oportunidades de Arbitragem!</h2>`
   html += `<p>Invista R$ 100 para garantir lucro em qualquer um dos cenários abaixo:</p><hr />`
 
   arbs.forEach((arb) => {
     // Extraindo as pernas ("legs") dessa arbitragem
-    const legs: { bookmaker: string; market: string; name: string; price: number }[] = []
-    
+    const legs: {
+      bookmaker: string
+      market: string
+      name: string
+      price: number
+    }[] = []
+
     if (arb.bookmakers) {
-      arb.bookmakers.forEach((bm: any) => {
+      arb.bookmakers.forEach((bm) => {
         if (bm.markets) {
-          bm.markets.forEach((market: any) => {
+          bm.markets.forEach((market) => {
             if (market.outcomes) {
-              market.outcomes.forEach((outcome: any) => {
+              market.outcomes.forEach((outcome) => {
                 legs.push({
                   bookmaker: bm.title,
                   market: market.key,
                   name: outcome.name,
-                  price: outcome.price
+                  price: outcome.price,
                 })
               })
             }
@@ -98,7 +127,9 @@ function formatSurebetsEmail(arbs: any[]): string {
 
     // Calcular lucro garantido
     let impliedSum = 0
-    legs.forEach(l => { impliedSum += 1 / l.price })
+    legs.forEach((l) => {
+      impliedSum += 1 / l.price
+    })
     const profitMargin = ((1 - impliedSum) * 100).toFixed(2)
 
     html += `<div style="margin-bottom: 24px; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">`
@@ -108,7 +139,7 @@ function formatSurebetsEmail(arbs: any[]): string {
 
     // Calcular stakes para o total de 100 Reais
     const TOTAL_BANKROLL = 100
-    legs.forEach(leg => {
+    legs.forEach((leg) => {
       const stake = (TOTAL_BANKROLL * (1 / leg.price)) / impliedSum
       const ret = stake * leg.price
       html += `<li style="margin-bottom: 8px; font-size: 14px;">`
@@ -122,6 +153,6 @@ function formatSurebetsEmail(arbs: any[]): string {
 
   html += `<p style="font-size: 12px; color: #6b7280; margin-top: 24px;">Este é um scan automático de surebets (roda a cada 6 minutos).</p>`
   html += `</div>`
-  
+
   return html
 }

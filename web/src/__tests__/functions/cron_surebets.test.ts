@@ -6,9 +6,9 @@ import * as surebetsFetcher from '../../../netlify/lib/surebetsFetcher'
 const mockResendSend = vi.fn()
 vi.mock('resend', () => {
   return {
-    Resend: vi.fn().mockImplementation(function() {
+    Resend: vi.fn().mockImplementation(function () {
       return { emails: { send: mockResendSend } }
-    })
+    }),
   }
 })
 
@@ -24,8 +24,6 @@ vi.mock('../../../netlify/lib/surebetsFetcher', () => ({
 }))
 
 describe('Cron Surebets Scheduled Function', () => {
-  const originalEnv = process.env
-
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.ODDS_API_KEY = 'test_odds'
@@ -36,17 +34,17 @@ describe('Cron Surebets Scheduled Function', () => {
 
   it('fails if missing env variables', async () => {
     delete process.env.ODDS_API_KEY
-    // @ts-ignore handler type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await handler({} as any, {} as any)
     expect(res?.statusCode).toBe(500)
   })
 
   it('does nothing if no surebets found', async () => {
     vi.mocked(surebetsFetcher.fetchSurebetsFromApi).mockResolvedValue([])
-    
-    // @ts-ignore handler type
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await handler({} as any, {} as any)
-    
+
     expect(res?.statusCode).toBe(200)
     expect(res?.body).toBe('No surebets found')
     expect(mockListUsers).not.toHaveBeenCalled()
@@ -57,39 +55,58 @@ describe('Cron Surebets Scheduled Function', () => {
     // Mock surebet API response
     vi.mocked(surebetsFetcher.fetchSurebetsFromApi).mockResolvedValue([
       {
-        id: '1',
-        sport_title: 'Football',
         home_team: 'Team A',
         away_team: 'Team B',
         bookmakers: [
-          { key: 'betano', title: 'Betano', markets: [
-            { key: 'h2h', outcomes: [ { name: 'Team A', price: 2.5 } ] }
-          ]},
-          { key: 'bet365', title: 'Bet365', markets: [
-            { key: 'h2h', outcomes: [ { name: 'Team B', price: 2.0 }, { name: 'Draw', price: 10.0 } ] } // Simplified logic
-          ]}
-        ]
-      }
+          {
+            key: 'betano',
+            title: 'Betano',
+            markets: [
+              {
+                key: 'h2h',
+                outcomes: [{ name: 'Team A', price: 2.5 }],
+              },
+            ],
+          },
+          {
+            key: 'bet365',
+            title: 'Bet365',
+            markets: [
+              {
+                key: 'h2h',
+                outcomes: [
+                  { name: 'Team B', price: 2.0 },
+                  { name: 'Draw', price: 10.0 },
+                ],
+              },
+            ],
+          },
+        ],
+      },
     ])
 
     // Mock supabase users
     mockListUsers.mockResolvedValue({
-      data: { users: [{ email: 'test1@test.com' }, { email: 'test2@test.com' }] },
-      error: null
+      data: {
+        users: [{ email: 'test1@test.com' }, { email: 'test2@test.com' }],
+      },
+      error: null,
     })
 
     mockResendSend.mockResolvedValue({ id: 'resend_1' })
 
-    // @ts-ignore handler type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await handler({} as any, {} as any)
-    
+
     expect(res?.statusCode).toBe(200)
     expect(mockListUsers).toHaveBeenCalled()
-    expect(mockResendSend).toHaveBeenCalledWith(expect.objectContaining({
-      to: ['test1@test.com', 'test2@test.com'],
-      from: 'onboarding@resend.dev',
-      subject: expect.stringContaining('Surebet'),
-      html: expect.stringContaining('R$ 100') // Should mention base stake
-    }))
+    expect(mockResendSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: ['test1@test.com', 'test2@test.com'],
+        from: 'onboarding@resend.dev',
+        subject: expect.stringContaining('Surebet'),
+        html: expect.stringContaining('R$ 100'),
+      })
+    )
   })
 })
