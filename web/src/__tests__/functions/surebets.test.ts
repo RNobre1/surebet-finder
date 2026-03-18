@@ -23,8 +23,8 @@ describe('Netlify Function: surebets', () => {
     expect(JSON.parse(response?.body || '')).toEqual({ error: 'ODDS_API_KEY not set' })
   })
 
-  it('fetches surebets and merges results successfully', async () => {
-    // Mock fetch to return successful responses with dummy data
+  it('fetches surebets and returns results successfully', async () => {
+    // Mock fetch to return successful response with dummy data
     const mockData = [{ id: '1', home_team: 'Team A' }]
 
     vi.mocked(fetch).mockImplementation(async () => {
@@ -40,24 +40,15 @@ describe('Netlify Function: surebets', () => {
     expect(response?.statusCode).toBe(200)
     const body = JSON.parse(response?.body || '[]')
 
-    // 5 sports means 5 calls, and each appends mockData to results
-    expect(body).toHaveLength(5)
+    // Single call should return exactly what was fetched
+    expect(body).toHaveLength(1)
     expect(body[0]).toEqual(mockData[0])
-    expect(fetch).toHaveBeenCalledTimes(5)
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('handles fetch errors gracefully and maps to empty array', async () => {
-    // Mock fetch to fail for some and succeed for others
-    let callCount = 0
+  it('handles fetch errors gracefully and returns empty array', async () => {
     vi.mocked(fetch).mockImplementation(async () => {
-      callCount++
-      if (callCount === 1) {
-        return { ok: false } as Response
-      }
-      return {
-        ok: true,
-        json: async () => [{ id: `event-${callCount}` }],
-      } as Response
+      return { ok: false } as Response
     })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,7 +56,7 @@ describe('Netlify Function: surebets', () => {
 
     expect(response?.statusCode).toBe(200)
     const body = JSON.parse(response?.body || '[]')
-    // 1 failed, 4 succeeded
-    expect(body).toHaveLength(4)
+    expect(body).toHaveLength(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })

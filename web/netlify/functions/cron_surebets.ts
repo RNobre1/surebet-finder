@@ -4,9 +4,9 @@ import { Resend } from 'resend'
 import { fetchSurebetsFromApi } from '../lib/surebetsFetcher'
 
 const BOOKMAKERS = 'Betano,Bet365'
-const SPORTS = ['football', 'basketball', 'american-football', 'tennis', 'volleyball']
 
 export const handler: Handler = async () => {
+  console.log('--- Cron Surebets Started ---')
   const API_KEY = process.env.ODDS_API_KEY
   const SUPABASE_URL = process.env.VITE_SUPABASE_URL
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -19,7 +19,7 @@ export const handler: Handler = async () => {
 
   try {
     // 1. Fetch surebets
-    const arbs = await fetchSurebetsFromApi(API_KEY, SPORTS, BOOKMAKERS)
+    const arbs = await fetchSurebetsFromApi(API_KEY, BOOKMAKERS)
 
     if (!arbs || arbs.length === 0) {
       console.log('No surebets found in this run.')
