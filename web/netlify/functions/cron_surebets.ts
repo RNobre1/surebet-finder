@@ -1,5 +1,7 @@
 import type { Handler, Config } from '@netlify/functions'
+import { getStore } from '@netlify/blobs'
 import { createClient } from '@supabase/supabase-js'
+import { createHash } from 'crypto'
 import { Resend } from 'resend'
 import { fetchSurebetsFromApi } from '../lib/surebetsFetcher'
 
@@ -37,7 +39,19 @@ export const handler: Handler = async () => {
       return { statusCode: 200, body: 'No surebets found' }
     }
 
-    // 2. Fetch users to notify
+    // 2. Deduplication: compute a fingerprint and compare with the stored one
+    const currentFingerprint = computeArbsFingerprint(arbs)
+    const store = getStore('cron-state')
+    const lastFingerprint = await store.get('last-surebet-fingerprint', { type: 'text' })
+
+    if (lastFingerprint === currentFingerprint) {
+      console.log(
+        `Same surebets as last run (hash: ${currentFingerprint.slice(0, 8)}...). Skipping email.`
+      )
+      return { statusCode: 200, body: 'No change, email skipped' }
+    }
+
+    // 3. Fetch users to notify
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const {
       data: { users },
@@ -56,10 +70,10 @@ export const handler: Handler = async () => {
       return { statusCode: 200, body: 'No active users' }
     }
 
-    // 3. Format email body
+    // 4. Format email body
     const htmlBody = formatSurebetsEmail(arbs)
 
-    // 4. Send email
+    // 5. Send email
     const resend = new Resend(RESEND_API_KEY)
     await resend.emails.send({
       from: 'onboarding@resend.dev', // Default sender for Resend free tier
@@ -68,12 +82,37 @@ export const handler: Handler = async () => {
       html: htmlBody,
     })
 
+    // 6. Save fingerprint so next run can skip if nothing changed
+    await store.set('last-surebet-fingerprint', currentFingerprint)
+
     console.log(`Successfully sent email with ${arbs.length} surebets to ${emails.length} users.`)
     return { statusCode: 200, body: 'Email sent' }
   } catch (err) {
     console.error('Error executing cron_surebets:', err)
     return { statusCode: 500, body: 'Internal Server Error' }
   }
+}
+
+// Computes a deterministic SHA-256 fingerprint of the surebets.
+// Sorted by ID so order changes don't trigger a new email.
+// Only includes stable fields — odds, legs, and profit — so cosmetic metadata changes don't matter.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function computeArbsFingerprint(arbs: any[]): string {
+  const normalized = arbs
+    .map((arb) => ({
+      id: arb.id,
+      profitMargin: arb.profitMargin,
+      market: arb.market?.name,
+      hdp: arb.market?.hdp,
+      legs: (arb.legs ?? []).map((l: { bookmaker: string; side: string; odds: string }) => ({
+        bookmaker: l.bookmaker,
+        side: l.side,
+        odds: l.odds,
+      })),
+    }))
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+
+  return createHash('sha256').update(JSON.stringify(normalized)).digest('hex')
 }
 
 interface ArbLeg {

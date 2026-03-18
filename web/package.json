@@ -15,6 +15,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"netlify/**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.2",
     "@supabase/supabase-js": "^2.99.2",
     "lucide-react": "^0.577.0",
     "react": "^19.2.4",
