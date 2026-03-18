@@ -1,19 +1,30 @@
-import type { Handler } from '@netlify/functions'
+import type { Handler, Config } from '@netlify/functions'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { fetchSurebetsFromApi } from '../lib/surebetsFetcher'
 
 const BOOKMAKERS = 'Betano,Bet365'
 
+export const config: Config = {
+  schedule: '* * * * *', // Every minute
+}
+
 export const handler: Handler = async () => {
   console.log('--- Cron Surebets Started ---')
+  console.log('Time:', new Date().toISOString())
+  
   const API_KEY = process.env.ODDS_API_KEY
   const SUPABASE_URL = process.env.VITE_SUPABASE_URL
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
   const RESEND_API_KEY = process.env.RESEND_API_KEY
 
   if (!API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_KEY || !RESEND_API_KEY) {
-    console.error('Missing required environment variables for cron_surebets')
+    console.error('Missing env vars:', {
+      API_KEY: !!API_KEY,
+      SUPABASE_URL: !!SUPABASE_URL,
+      SUPABASE_SERVICE_KEY: !!SUPABASE_SERVICE_KEY,
+      RESEND_API_KEY: !!RESEND_API_KEY
+    })
     return { statusCode: 500, body: 'Missing environment variables' }
   }
 
@@ -86,10 +97,6 @@ interface Surebet {
   bookmakers: Bookmaker[]
 }
 
-// Netlify configuration for Scheduled Functions
-export const config = {
-  schedule: '1-5,7-11,13-17,19-23,25-29,31-35,37-41,43-47,49-53,55-59 * * * *',
-}
 
 // Helper para formatar o email e calcular as stakes baseadas em 100 BRL
 function formatSurebetsEmail(arbs: Surebet[]): string {
