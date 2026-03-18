@@ -2,3 +2,5 @@
 temp.*
 output*
 node_modules/*
+cloud.md
+perplexity-frontend/*
