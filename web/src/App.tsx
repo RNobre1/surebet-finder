@@ -20,6 +20,9 @@ const ValueBetsPage = lazy(() =>
 const FreeBetsPage = lazy(() =>
   import('./pages/FreeBetsPage').then((module) => ({ default: module.FreeBetsPage }))
 )
+const ActiveSurebetsPage = lazy(() =>
+  import('./pages/ActiveSurebetsPage').then((module) => ({ default: module.ActiveSurebetsPage }))
+)
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -65,6 +68,7 @@ export default function App() {
             <Route path="/contas" element={<AccountsPage userId={user.id} />} />
             <Route path="/surebets" element={<SurebetsPage />} />
             <Route path="/value-bets" element={<ValueBetsPage />} />
+            <Route path="/ativas" element={<ActiveSurebetsPage />} />
             <Route path="/apostas-gratis" element={<FreeBetsPage userId={user.id} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -71,6 +71,15 @@ export interface ApiSurebet {
   event?: SurebetEvent
 }
 
+export interface ActiveSurebetLeg {
+  leg_id: string
+  bookmaker_id: string
+  market_name: string
+  odds: number
+  stake: number
+  status: 'pending' | 'won' | 'lost' | 'void'
+}
+
 /** Surebet saved in our Supabase history */
 export interface SurebetHistory {
   id: string
@@ -78,12 +87,11 @@ export interface SurebetHistory {
   event_name: string
   sport: string
   league: string
-  market: string
   profit_margin: number
   total_stake: number
   event_date: string
-  legs: SurebetLeg[]
-  status: 'active' | 'settled' | 'expired'
+  legs: ActiveSurebetLeg[]
+  status: 'active' | 'settled' | 'void'
   created_at: string
   updated_at: string
 }

@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Wallet, Zap, TrendingUp, Gift, LogOut } from 'lucide-react'
+import { LayoutDashboard, Wallet, Zap, TrendingUp, Gift, LogOut, CheckSquare } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/contas', icon: Wallet, label: 'Contas' },
   { to: '/surebets', icon: Zap, label: 'Surebets' },
   { to: '/value-bets', icon: TrendingUp, label: 'Value Bets' },
+  { to: '/ativas', icon: CheckSquare, label: 'Apostas Ativas' },
   { to: '/apostas-gratis', icon: Gift, label: 'Apostas Grátis' },
 ]
 
