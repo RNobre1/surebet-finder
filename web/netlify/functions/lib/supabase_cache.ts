@@ -46,11 +46,20 @@ export async function saveSurebets(bets: Record<string, unknown>[]) {
 
 export async function getCronState(type: 'surebets' | 'valuebets' | 'surebets_queue') {
   const supabase = getSupabaseClient()
-  const { data, error } = await supabase.from('cron_state').select('*').eq('id', type).single()
+  const { data, error } = await supabase.from('cron_state').select('*').eq('key', type).single()
 
   if (error && error.code !== 'PGRST116') {
     // PGRST116 is 'not found'
     throw error
+  }
+
+  if (data && data.value) {
+    try {
+      return JSON.parse(data.value)
+    } catch (e) {
+      console.error(`Error parsing cron_state value for ${type}:`, e)
+      return data
+    }
   }
 
   return data || null
@@ -62,7 +71,11 @@ export async function updateCronState(
 ) {
   const supabase = getSupabaseClient()
 
-  const payload = { id: type, ...state, updated_at: new Date().toISOString() }
+  const payload = {
+    key: type,
+    value: JSON.stringify(state),
+    updated_at: new Date().toISOString(),
+  }
 
   const existing = await getCronState(type)
   if (!existing) {
@@ -70,7 +83,7 @@ export async function updateCronState(
     if (error) throw error
   } else {
     // Upsert
-    const { error } = await supabase.from('cron_state').update(payload).eq('id', type)
+    const { error } = await supabase.from('cron_state').update(payload).eq('key', type)
     if (error) throw error
   }
 }
