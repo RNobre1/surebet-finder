@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { ApiValueBet } from '../types'
 import { supabase } from '../lib/supabase'
 import { removeDuplicateValueBets } from '../utils/valueBetsUtils'
@@ -38,6 +38,10 @@ export function useValueBets(): UseValueBetsState {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    fetchValueBets()
+  }, [fetchValueBets])
 
   return { valueBets, loading, error, fetch: fetchValueBets }
 }

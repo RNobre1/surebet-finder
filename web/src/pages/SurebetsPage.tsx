@@ -9,8 +9,7 @@ const MONITORED_BOOKMAKERS = ['Betano', 'Bet365']
 const ITEMS_PER_PAGE = 15
 
 export function SurebetsPage() {
-  const { surebets, loading, error, fetch } = useSurebets()
-  const [hasFetched, setHasFetched] = useState(false)
+  const { surebets, loading, error } = useSurebets()
 
   // Filters State
   const [sportFilter, setSportFilter] = useState('All')
@@ -18,12 +17,6 @@ export function SurebetsPage() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
-
-  const handleFetch = async () => {
-    setCurrentPage(1)
-    await fetch()
-    setHasFetched(true)
-  }
 
   // Obter opcoes unicas para filtros
   const availableSports = Array.from(new Set(surebets.map((s) => s.event?.sport || 'Unknown')))
@@ -53,16 +46,8 @@ export function SurebetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Surebets</h1>
-          <p className="text-sm text-slate-400 mt-1">Oportunidades de arbitragem em tempo real</p>
+          <p className="text-sm text-slate-400 mt-1">Oportunidades de arbitragem em tempo real atuallizadas periodicamente</p>
         </div>
-        <button
-          onClick={handleFetch}
-          disabled={loading}
-          className="flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 font-semibold text-white hover:bg-green-500 disabled:opacity-60 transition-all"
-        >
-          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          {loading ? 'Buscando...' : 'Buscar Surebets'}
-        </button>
       </div>
 
       {/* Bookmakers info */}
@@ -88,14 +73,14 @@ export function SurebetsPage() {
       )}
 
       {/* Results */}
-      {!hasFetched && !loading && (
+      {loading && (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-          <Zap size={40} className="mb-3 opacity-30" />
-          <p className="text-base">Clique em "Buscar Surebets" para iniciar</p>
+          <RefreshCw size={40} className="mb-3 opacity-30 animate-spin" />
+          <p className="text-base">Carregando oportunidades seguras da rede...</p>
         </div>
       )}
 
-      {hasFetched && !loading && surebets.length === 0 && !error && (
+      {!loading && surebets.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
           <AlertCircle size={40} className="mb-3 opacity-30" />
           <p className="text-base">Nenhuma surebet encontrada no momento</p>

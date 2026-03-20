@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { ApiSurebet } from '../types'
 import { supabase } from '../lib/supabase'
 
@@ -33,6 +33,10 @@ export function useSurebets(): UseSurebetsState {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    fetchSurebets()
+  }, [fetchSurebets])
 
   return { surebets, loading, error, fetch: fetchSurebets }
 }

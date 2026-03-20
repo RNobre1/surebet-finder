@@ -10,8 +10,7 @@ const MONITORED_BOOKMAKERS = ['Betano', 'Bet365']
 const ITEMS_PER_PAGE = 15
 
 export function ValueBetsPage() {
-  const { valueBets, loading, error, fetch } = useValueBets()
-  const [hasFetched, setHasFetched] = useState(false)
+  const { valueBets, loading, error } = useValueBets()
 
   // Selects filters
   const [sportFilter, setSportFilter] = useState('All')
@@ -30,12 +29,6 @@ export function ValueBetsPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
-
-  const handleFetch = async () => {
-    setCurrentPage(1)
-    await fetch()
-    setHasFetched(true)
-  }
 
   const handleReset = () => {
     setSportFilter('All')
@@ -111,16 +104,8 @@ export function ValueBetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Value Bets</h1>
-          <p className="text-sm text-slate-400 mt-1">Apostas com valor esperado positivo</p>
+          <p className="text-sm text-slate-400 mt-1">Apostas com valor esperado positivo atualizadas periodicamente</p>
         </div>
-        <button
-          onClick={handleFetch}
-          disabled={loading}
-          className="flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 font-semibold text-white hover:bg-purple-500 disabled:opacity-60 transition-all"
-        >
-          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          {loading ? 'Buscando...' : 'Buscar Value Bets'}
-        </button>
       </div>
 
       {/* Bookmakers info */}
@@ -146,14 +131,14 @@ export function ValueBetsPage() {
       )}
 
       {/* Empty states */}
-      {!hasFetched && !loading && (
+      {loading && (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-          <TrendingUp size={40} className="mb-3 opacity-30" />
-          <p>Clique em &quot;Buscar Value Bets&quot; para iniciar</p>
+          <RefreshCw size={40} className="mb-3 opacity-30 animate-spin" />
+          <p>Carregando as melhores oportunidades do momento...</p>
         </div>
       )}
 
-      {hasFetched && !loading && valueBets.length === 0 && !error && (
+      {!loading && valueBets.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500">
           <AlertCircle size={40} className="mb-3 opacity-30" />
           <p>Nenhuma value bet encontrada no momento</p>

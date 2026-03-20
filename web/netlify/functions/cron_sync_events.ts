@@ -42,16 +42,11 @@ export const handler: Handler = async () => {
     // We only need ONE key to fetch events structure. Let's use the first one.
     const primaryKey = keys[0].key
 
-    // Calculate time bounds: Next 48 hours
-    const now = new Date()
-    const commenceTimeFrom = now.toISOString()
-    const nowPlus48 = new Date(now.getTime() + 48 * 60 * 60 * 1000)
-    const commenceTimeTo = nowPlus48.toISOString()
-
+    // Keep it simple since Odds-API v3 events endpoint does not support commenceTime constraints
     const allEventIds: string[] = []
 
     for (const sport of TARGET_LEAGUES) {
-      const url = `https://api.odds-api.io/v3/events?sport=${sport}&commenceTimeFrom=${commenceTimeFrom}&commenceTimeTo=${commenceTimeTo}&apiKey=${primaryKey}`
+      const url = `https://api.odds-api.io/v3/events?sport=${sport}&apiKey=${primaryKey}`
       try {
         const response = await fetch(url)
         if (!response.ok) {
@@ -59,12 +54,21 @@ export const handler: Handler = async () => {
           continue
         }
 
-        const json = (await response.json()) as { data?: unknown[] }
-        const data = Array.isArray(json) ? json : json.data || []
+        const jsonResponse = await response.json()
+        const data = (Array.isArray(jsonResponse) ? jsonResponse : jsonResponse.data || []) as {
+          id: string
+          commence_time: string
+        }[]
 
-        for (const evt of data as { id: string }[]) {
-          if (evt && evt.id) {
-            allEventIds.push(evt.id)
+        const now = new Date()
+        const fortyEightHoursFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000)
+
+        for (const evt of data) {
+          if (evt && evt.id && evt.commence_time) {
+            const commenceTime = new Date(evt.commence_time)
+            if (commenceTime >= now && commenceTime <= fortyEightHoursFromNow) {
+              allEventIds.push(evt.id)
+            }
           }
         }
       } catch (err) {
