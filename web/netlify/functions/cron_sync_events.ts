@@ -54,7 +54,7 @@ export const handler: Handler = async () => {
           continue
         }
 
-        const jsonResponse = await response.json()
+        const jsonResponse = (await response.json()) as Record<string, unknown>
         const data = (Array.isArray(jsonResponse) ? jsonResponse : jsonResponse.data || []) as {
           id: string
           commence_time: string

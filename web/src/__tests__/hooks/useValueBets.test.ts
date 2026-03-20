@@ -77,7 +77,7 @@ describe('useValueBets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useValueBets())
-    
+
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     expect(result.current.valueBets).toHaveLength(2)
@@ -93,7 +93,7 @@ describe('useValueBets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useValueBets())
-    
+
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     expect(result.current.error).toBe('DB Error')

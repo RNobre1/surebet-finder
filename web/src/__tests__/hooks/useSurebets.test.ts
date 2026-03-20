@@ -68,7 +68,7 @@ describe('useSurebets', () => {
 
   it('loads surebets successfully from supabase', async () => {
     const { result } = renderHook(() => useSurebets())
-    
+
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     expect(result.current.surebets).toHaveLength(1)
@@ -83,7 +83,7 @@ describe('useSurebets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useSurebets())
-    
+
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     expect(result.current.error).toBe('DB Error')
