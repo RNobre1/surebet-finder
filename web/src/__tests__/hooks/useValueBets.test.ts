@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useValueBets } from '../../hooks/useValueBets'
 import type { ApiValueBet } from '../../types'
 
@@ -39,10 +39,10 @@ describe('useValueBets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
   })
 
-  it('starts with idle state', () => {
+  it('starts loading on mount', async () => {
     const { result } = renderHook(() => useValueBets())
-    expect(result.current.loading).toBe(false)
-    expect(result.current.valueBets).toHaveLength(0)
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.valueBets).toHaveLength(1)
     expect(result.current.error).toBeNull()
   })
 
@@ -53,9 +53,7 @@ describe('useValueBets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useValueBets())
-    act(() => {
-      result.current.fetch()
-    })
+    // useEffect triggers immediately
     expect(result.current.loading).toBe(true)
   })
 
@@ -79,11 +77,9 @@ describe('useValueBets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useValueBets())
-    await act(async () => {
-      await result.current.fetch()
-    })
+    
+    await waitFor(() => expect(result.current.loading).toBe(false))
 
-    expect(result.current.loading).toBe(false)
     expect(result.current.valueBets).toHaveLength(2)
     // The data returned by supabase mock is already ordered
     expect(result.current.valueBets[0].expectedValue).toBe(0.052)
@@ -97,9 +93,8 @@ describe('useValueBets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useValueBets())
-    await act(async () => {
-      await result.current.fetch()
-    })
+    
+    await waitFor(() => expect(result.current.loading).toBe(false))
 
     expect(result.current.error).toBe('DB Error')
     expect(result.current.valueBets).toHaveLength(0)

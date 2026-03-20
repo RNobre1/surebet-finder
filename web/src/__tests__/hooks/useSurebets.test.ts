@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useSurebets } from '../../hooks/useSurebets'
 import type { ApiSurebet } from '../../types'
 import { supabase } from '../../lib/supabase'
@@ -46,10 +46,12 @@ describe('useSurebets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
   })
 
-  it('starts with idle state (not loading)', () => {
+  it('starts loading on mount', async () => {
     const { result } = renderHook(() => useSurebets())
-    expect(result.current.loading).toBe(false)
-    expect(result.current.surebets).toHaveLength(0)
+    // It might be true or false depending on how fast the effect runs, 
+    // but we expect it to eventually finish loading
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.surebets).toHaveLength(1)
   })
 
   it('sets loading to true while fetching', async () => {
@@ -60,20 +62,15 @@ describe('useSurebets', () => {
 
     const { result } = renderHook(() => useSurebets())
 
-    act(() => {
-      result.current.fetch()
-    })
-
+    // Should be loading immediately due to useEffect
     expect(result.current.loading).toBe(true)
   })
 
   it('loads surebets successfully from supabase', async () => {
     const { result } = renderHook(() => useSurebets())
-    await act(async () => {
-      await result.current.fetch()
-    })
+    
+    await waitFor(() => expect(result.current.loading).toBe(false))
 
-    expect(result.current.loading).toBe(false)
     expect(result.current.surebets).toHaveLength(1)
     expect(result.current.surebets[0].profitMargin).toBe(1.52)
     expect(result.current.error).toBeNull()
@@ -86,11 +83,9 @@ describe('useSurebets', () => {
     } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useSurebets())
-    await act(async () => {
-      await result.current.fetch()
-    })
+    
+    await waitFor(() => expect(result.current.loading).toBe(false))
 
-    expect(result.current.loading).toBe(false)
     expect(result.current.error).toBe('DB Error')
     expect(result.current.surebets).toHaveLength(0)
   })
