@@ -3,8 +3,14 @@ import { renderHook, act } from '@testing-library/react'
 import { useValueBets } from '../../hooks/useValueBets'
 import type { ApiValueBet } from '../../types'
 
-const mockFetch = vi.fn()
-vi.stubGlobal('fetch', mockFetch)
+import { supabase } from '../../lib/supabase'
+
+// Mock supabase
+vi.mock('../../lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(),
+  },
+}))
 
 const mockValueBet: ApiValueBet = {
   id: 'vb-1',
@@ -27,6 +33,10 @@ const mockValueBet: ApiValueBet = {
 describe('useValueBets', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [mockValueBet], error: null }),
+    } as any)
   })
 
   it('starts with idle state', () => {
@@ -37,7 +47,11 @@ describe('useValueBets', () => {
   })
 
   it('sets loading true while fetching', () => {
-    mockFetch.mockReturnValue(new Promise(() => {}))
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnValue(new Promise(() => {})), // never resolves
+    } as any)
+
     const { result } = renderHook(() => useValueBets())
     act(() => {
       result.current.fetch()
@@ -45,8 +59,13 @@ describe('useValueBets', () => {
     expect(result.current.loading).toBe(true)
   })
 
-  it('loads value bets and sorts by expectedValue descending', async () => {
-    const lowEV: ApiValueBet = { ...mockValueBet, id: 'vb-2', expectedValue: 0.01, betSide: 'away' }
+  it('loads value bets successfully from supabase', async () => {
+    const lowEV: ApiValueBet = {
+      ...mockValueBet,
+      id: 'vb-2',
+      expectedValue: 0.01,
+      betSide: 'away',
+    }
     const highEV: ApiValueBet = {
       ...mockValueBet,
       id: 'vb-1',
@@ -54,32 +73,37 @@ describe('useValueBets', () => {
       betSide: 'home',
     }
 
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([lowEV, highEV]),
-    })
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [highEV, lowEV], error: null }),
+    } as any)
 
     const { result } = renderHook(() => useValueBets())
     await act(async () => {
-      result.current.fetch()
+      await result.current.fetch()
     })
 
     expect(result.current.loading).toBe(false)
     expect(result.current.valueBets).toHaveLength(2)
-    // Should be sorted descending by EV
+    // The data returned by supabase mock is already ordered
     expect(result.current.valueBets[0].expectedValue).toBe(0.052)
     expect(result.current.valueBets[1].expectedValue).toBe(0.01)
   })
 
-  it('handles fetch error', async () => {
-    mockFetch.mockRejectedValue(new Error('Timeout'))
+  it('handles database error', async () => {
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi
+        .fn()
+        .mockResolvedValue({ data: null, error: new Error('DB Error') }),
+    } as any)
 
     const { result } = renderHook(() => useValueBets())
     await act(async () => {
-      result.current.fetch()
+      await result.current.fetch()
     })
 
-    expect(result.current.error).toBe('Timeout')
+    expect(result.current.error).toBe('DB Error')
     expect(result.current.valueBets).toHaveLength(0)
   })
 })

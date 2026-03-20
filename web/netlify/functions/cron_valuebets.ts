@@ -13,25 +13,23 @@ export const handler: Handler = async () => {
   try {
     const keys = getOddsApiKeys()
     if (!keys || keys.length === 0) throw new Error('No API keys configured.')
-    
+
     const allValueBetsPromises = keys.map(async (keyConfig) => {
       // Endpoint v3 for value-bets global
       // Note: According to rule odds-api-quick-start.md: GET /value-bets?bookmaker={name}&apiKey={key}
-      // Actually, rule says `GET /value-bets?bookmaker={name}&apiKey={key}`.
-      // But cloud.md says: `valuebets HTTP function GET /api/valuebets -> odds-api.io /value-bets (Global, sem filtro de esporte)`
-      // and "Removemos o parâmetro sport das chamadas... A API retorna todos os esportes ativos." 
-      // Odds API expects bookmakers list.
       const bookmakers = keyConfig.bookmakers.join(',')
       const url = `https://api.odds-api.io/v3/value-bets?bookmakers=${bookmakers}&apiKey=${keyConfig.key}`
-      
+
       try {
         const response = await fetch(url)
         if (!response.ok) {
-          console.error(`Error fetching valuebets for key ${keyConfig.key}: ${response.statusText}`)
+          console.error(
+            `Error fetching valuebets for key ${keyConfig.key}: ${response.statusText}`
+          )
           return []
         }
-        const json = await response.json() as any
-        return Array.isArray(json) ? json : (json.data || [])
+        const json = (await response.json()) as any
+        return Array.isArray(json) ? json : json.data || []
       } catch (err) {
         console.error(`Failed to fetch valuebets for key ${keyConfig.key}:`, err)
         return []
@@ -39,10 +37,10 @@ export const handler: Handler = async () => {
     })
 
     const allValueBetsNested = await Promise.all(allValueBetsPromises)
-    
+
     // Aggregator deduplicates and highlights the highest EV
     const aggregated = aggregateValueBets(allValueBetsNested)
-    
+
     // Save to supersonic cache
     const result = await saveValueBets(aggregated)
 

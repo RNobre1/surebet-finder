@@ -1,20 +1,26 @@
 import type { Handler } from '@netlify/functions'
-import { fetchSurebetsFromApi } from '../lib/surebetsFetcher'
-
-const BOOKMAKERS = 'Betano,Bet365'
+import { getSupabaseClient } from './lib/supabase_cache'
 
 export const handler: Handler = async () => {
-  const API_KEY = process.env.ODDS_API_KEY ?? ''
+  try {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('cached_surebets')
+      .select('*')
+      .order('profitMargin', { ascending: false })
 
-  if (!API_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'ODDS_API_KEY not set' }) }
-  }
+    if (error) throw error
 
-  const arbs = await fetchSurebetsFromApi(API_KEY, BOOKMAKERS)
-
-  return {
-    statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(arbs),
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data || []),
+    }
+  } catch (err) {
+    console.error('Error in surebets proxy:', err)
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to fetch cached surebets' }),
+    }
   }
 }

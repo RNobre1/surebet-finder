@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { getOddsApiKeys, OddsApiKeyConfig } from '../../netlify/functions/lib/api_keys'
+import { getOddsApiKeys } from '../../netlify/functions/lib/api_keys'
 
 describe('API Keys Config Parser', () => {
   const originalEnv = process.env

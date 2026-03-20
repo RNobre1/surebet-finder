@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { aggregateValueBets, AggregatedValueBet } from '../../netlify/functions/lib/valuebets_aggregator'
+import { aggregateValueBets } from '../../netlify/functions/lib/valuebets_aggregator'
 
 describe('ValueBets Aggregator', () => {
   it('should format and flag the highest EV for the same event and market outcome', () => {
@@ -39,15 +39,18 @@ describe('ValueBets Aggregator', () => {
       }
     ]
 
-    // @ts-ignore - Mocking partial ApiValueBet
-    const aggregated = aggregateValueBets([key1Bets, key2Bets])
+    const aggregated = aggregateValueBets([key1Bets as any, key2Bets as any])
 
     expect(aggregated).toHaveLength(3)
-    
+
     // Check flags
-    const betanoNadal = aggregated.find(b => b.bookmaker === 'betano' && b.betSide === 'home')
-    const betfairNadal = aggregated.find(b => b.bookmaker === 'betfair' && b.betSide === 'home')
-    const betfairFederer = aggregated.find(b => b.betSide === 'away')
+    const betanoNadal = aggregated.find(
+      (b) => b.bookmaker === 'betano' && b.betSide === 'home'
+    )
+    const betfairNadal = aggregated.find(
+      (b) => b.bookmaker === 'betfair' && b.betSide === 'home'
+    )
+    const betfairFederer = aggregated.find((b) => b.betSide === 'away')
 
     expect(betfairNadal?.is_highest_ev).toBe(true) // 8% > 5%
     expect(betanoNadal?.is_highest_ev).toBe(false)
@@ -63,11 +66,11 @@ describe('ValueBets Aggregator', () => {
       betSide: 'home',
       expectedValue: 0.05,
       market: { name: 'h2h' },
-      bookmakerOdds: { home: 1.9 }
+      bookmakerOdds: { home: 1.9 },
     }
 
-    const aggregated = aggregateValueBets([[bet1], [bet1]])
-    
+    const aggregated = aggregateValueBets([[bet1 as any], [bet1 as any]])
+
     expect(aggregated).toHaveLength(1) // Deduped to 1
   })
 })

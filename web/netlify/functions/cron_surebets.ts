@@ -8,7 +8,7 @@ export const config: Config = {
 }
 
 // 94 available points per key per hour (after 6 points reserved for ValueBets)
-const MAX_POINTS_PER_HOUR = 94;
+const MAX_POINTS_PER_HOUR = 94
 
 export const handler: Handler = async () => {
   console.log('--- Cron Surebets Started ---')
@@ -35,7 +35,13 @@ export const handler: Handler = async () => {
       const diffMinutes = (now.getTime() - lastRun.getTime()) / 60000
 
       if (diffMinutes < minMinutesBetweenRuns) {
-        console.log(`Throttled: ${activeEvents.length} events require ${minMinutesBetweenRuns}m interval. Ran ${diffMinutes.toFixed(1)}m ago.`)
+        console.log(
+          `Throttled: ${
+            activeEvents.length
+          } events require ${minMinutesBetweenRuns}m interval. Ran ${diffMinutes.toFixed(
+            1
+          )}m ago.`
+        )
         return { statusCode: 200, body: 'Throttled to save API quota' }
       }
     }
@@ -52,7 +58,7 @@ export const handler: Handler = async () => {
 
     const allKeysPromises = keys.map(async (keyConfig) => {
       const bookmakers = keyConfig.bookmakers.join(',')
-      const keyEvents: any[] = []
+      const keyEvents: Record<string, any>[] = []
 
       // We must fetch each chunk using this key
       for (const chunk of chunks) {
@@ -61,8 +67,8 @@ export const handler: Handler = async () => {
         try {
           const response = await fetch(url)
           if (!response.ok) continue
-          const json = await response.json() as any
-          const data = Array.isArray(json) ? json : (json.data || [])
+          const json = (await response.json()) as any
+          const data = Array.isArray(json) ? json : json.data || []
           keyEvents.push(...data)
         } catch (err) {
           console.error(`Failed to fetch chunk for ${keyConfig.key}:`, err)
@@ -75,8 +81,12 @@ export const handler: Handler = async () => {
     const allKeyResults = await Promise.all(allKeysPromises)
 
     // Calculate surebets combining the arrays from all keys
-    const calculatedSurebets = mergeAndCalculateSurebets(allKeyResults)
-    console.log(`Calculated ${calculatedSurebets.length} surebets across ${activeEvents.length} events.`)
+    const calculatedSurebets = mergeAndCalculateSurebets(
+      allKeyResults as any[][]
+    )
+    console.log(
+      `Calculated ${calculatedSurebets.length} surebets across ${activeEvents.length} events.`
+    )
 
     // Save active surebets
     await saveSurebets(calculatedSurebets)
@@ -84,10 +94,13 @@ export const handler: Handler = async () => {
     // Update state to register the run time
     await updateCronState('surebets_queue', {
       events: allEvents, // Keep full pool intact
-      last_run: now.toISOString()
+      last_run: now.toISOString(),
     })
 
-    return { statusCode: 200, body: `Matched ${calculatedSurebets.length} surebets` }
+    return {
+      statusCode: 200,
+      body: `Matched ${calculatedSurebets.length} surebets`,
+    }
   } catch (err) {
     console.error('Error in cron_surebets:', err)
     return { statusCode: 500, body: 'Internal Server Error' }

@@ -11,7 +11,7 @@ export function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey)
 }
 
-export async function saveValueBets(bets: any[]) {
+export async function saveValueBets(bets: Record<string, any>[]) {
   const supabase = getSupabaseClient()
 
   // Flush old cache. Using neq 'id', '0' to delete practically everything.
@@ -20,15 +20,15 @@ export async function saveValueBets(bets: any[]) {
   if (bets.length > 0) {
     const { error } = await supabase.from('cached_valuebets').insert(bets)
     if (error) {
-       console.error('Error inserting valuebets:', error)
-       return { success: false, error }
+      console.error('Error inserting valuebets:', error)
+      return { success: false, error }
     }
   }
 
   return { success: true }
 }
 
-export async function saveSurebets(bets: any[]) {
+export async function saveSurebets(bets: Record<string, any>[]) {
   const supabase = getSupabaseClient()
 
   await supabase.from('cached_surebets').delete().neq('id', '0')
@@ -36,15 +36,17 @@ export async function saveSurebets(bets: any[]) {
   if (bets.length > 0) {
     const { error } = await supabase.from('cached_surebets').insert(bets)
     if (error) {
-       console.error('Error inserting surebets:', error)
-       return { success: false, error }
+      console.error('Error inserting surebets:', error)
+      return { success: false, error }
     }
   }
 
   return { success: true }
 }
 
-export async function getCronState(type: 'surebets' | 'valuebets' | 'surebets_queue') {
+export async function getCronState(
+  type: 'surebets' | 'valuebets' | 'surebets_queue'
+) {
   const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from('cron_state')
@@ -52,16 +54,20 @@ export async function getCronState(type: 'surebets' | 'valuebets' | 'surebets_qu
     .eq('id', type)
     .single()
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 is 'not found'
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 is 'not found'
     throw error
   }
 
   return data || null
 }
 
-export async function updateCronState(type: 'surebets' | 'valuebets' | 'surebets_queue', state: any) {
+export async function updateCronState(
+  type: 'surebets' | 'valuebets' | 'surebets_queue',
+  state: Record<string, any>
+) {
   const supabase = getSupabaseClient()
-  
+
   const payload = { id: type, ...state, updated_at: new Date().toISOString() }
 
   const existing = await getCronState(type)

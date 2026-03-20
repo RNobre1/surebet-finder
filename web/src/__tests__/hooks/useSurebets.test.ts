@@ -2,10 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useSurebets } from '../../hooks/useSurebets'
 import type { ApiSurebet } from '../../types'
+import { supabase } from '../../lib/supabase'
 
-// Mock global fetch
-const mockFetch = vi.fn()
-vi.stubGlobal('fetch', mockFetch)
+// Mock supabase
+vi.mock('../../lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(),
+  },
+}))
 
 const mockSurebet: ApiSurebet = {
   id: 'arb-1',
@@ -35,6 +39,11 @@ const mockSurebet: ApiSurebet = {
 describe('useSurebets', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default mock setup
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [mockSurebet], error: null }),
+    } as any)
   })
 
   it('starts with idle state (not loading)', () => {
@@ -44,7 +53,11 @@ describe('useSurebets', () => {
   })
 
   it('sets loading to true while fetching', async () => {
-    mockFetch.mockReturnValue(new Promise(() => {})) // never resolves
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnValue(new Promise(() => {})), // never resolves
+    } as any)
+
     const { result } = renderHook(() => useSurebets())
 
     act(() => {
@@ -54,15 +67,10 @@ describe('useSurebets', () => {
     expect(result.current.loading).toBe(true)
   })
 
-  it('loads surebets successfully when fetch resolves', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([mockSurebet]),
-    })
-
+  it('loads surebets successfully from supabase', async () => {
     const { result } = renderHook(() => useSurebets())
     await act(async () => {
-      result.current.fetch()
+      await result.current.fetch()
     })
 
     expect(result.current.loading).toBe(false)
@@ -71,46 +79,21 @@ describe('useSurebets', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('returns empty array when API returns empty', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([]),
-    })
+  it('handles database error', async () => {
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi
+        .fn()
+        .mockResolvedValue({ data: null, error: new Error('DB Error') }),
+    } as any)
 
     const { result } = renderHook(() => useSurebets())
     await act(async () => {
-      result.current.fetch()
-    })
-
-    expect(result.current.surebets).toHaveLength(0)
-    expect(result.current.error).toBeNull()
-  })
-
-  it('handles network error', async () => {
-    mockFetch.mockRejectedValue(new Error('Network error'))
-
-    const { result } = renderHook(() => useSurebets())
-    await act(async () => {
-      result.current.fetch()
+      await result.current.fetch()
     })
 
     expect(result.current.loading).toBe(false)
-    expect(result.current.error).toBe('Network error')
+    expect(result.current.error).toBe('DB Error')
     expect(result.current.surebets).toHaveLength(0)
-  })
-
-  it('handles non-ok API response', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: () => Promise.resolve({ message: 'Unauthorized' }),
-    })
-
-    const { result } = renderHook(() => useSurebets())
-    await act(async () => {
-      result.current.fetch()
-    })
-
-    expect(result.current.error).toContain('401')
   })
 })
