@@ -46,7 +46,9 @@ export function SurebetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Surebets</h1>
-          <p className="text-sm text-slate-400 mt-1">Oportunidades de arbitragem em tempo real atuallizadas periodicamente</p>
+          <p className="text-sm text-slate-400 mt-1">
+            Oportunidades de arbitragem em tempo real atualizadas periodicamente
+          </p>
         </div>
       </div>
 
