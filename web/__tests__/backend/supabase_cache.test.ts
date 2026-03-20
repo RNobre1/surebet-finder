@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const {
-  selectMock,
-  insertMock,
-  deleteMock,
-  updateMock,
-} = vi.hoisted(() => {
+const { selectMock, insertMock, deleteMock, updateMock } = vi.hoisted(() => {
   const eqMock = vi.fn()
   const neqMock = vi.fn()
   const selectMock = vi.fn(() => ({ eq: eqMock }))
@@ -28,17 +23,18 @@ vi.mock('@supabase/supabase-js', () => {
   return { createClient: vi.fn(() => mockClient) }
 })
 
-import {
-  saveValueBets,
-  getCronState,
-} from '../../netlify/functions/lib/supabase_cache'
+import { saveValueBets, getCronState } from '../../netlify/functions/lib/supabase_cache'
 
 describe('Supabase Cache Layer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    delete (process.env as any).VITE_SUPABASE_URL
-    delete (process.env as any).SUPABASE_SERVICE_ROLE_KEY
+    // @ts-ignore
+    delete process.env.VITE_SUPABASE_URL
+    // @ts-ignore
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY
+    // @ts-ignore
     process.env.SUPABASE_URL = 'http://localhost'
+    // @ts-ignore
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'mock-key'
   })
 
@@ -49,9 +45,9 @@ describe('Supabase Cache Layer', () => {
     })
     insertMock.mockResolvedValue({ error: null })
 
-    const mockBets = [{ id: '1', expectedValue: 0.05 }] as Record<string, any>[]
+    const mockBets = [{ id: '1', expectedValue: 0.05 }] as Record<string, unknown>[]
 
-    const result = await saveValueBets(mockBets as any)
+    const result = await saveValueBets(mockBets)
     expect(result.success).toBe(true)
 
     // Should call delete first to flush old cache
@@ -65,8 +61,8 @@ describe('Supabase Cache Layer', () => {
     
     selectMock.mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue({ data: mockState, error: null })
-      })
+        single: vi.fn().mockResolvedValue({ data: mockState, error: null }),
+      }),
     })
 
     const state = await getCronState('surebets')

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handler } from '../../../netlify/functions/cron_surebets'
+import type { HandlerEvent, HandlerContext } from '@netlify/functions'
 import * as apiKeys from '../../../netlify/functions/lib/api_keys'
 import * as supabaseCache from '../../../netlify/functions/lib/supabase_cache'
 import * as calculator from '../../../netlify/functions/lib/surebet_calculator'
@@ -31,8 +31,7 @@ describe('Cron Surebets Scheduled Function', () => {
   it('does nothing if no events in queue', async () => {
     vi.mocked(supabaseCache.getCronState).mockResolvedValue({ events: [] })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = await handler({} as any, {} as any)
+    const res = await handler({} as HandlerEvent, {} as HandlerContext)
 
     expect(res?.statusCode).toBe(200)
     expect(res?.body).toBe('No events')
@@ -58,14 +57,11 @@ describe('Cron Surebets Scheduled Function', () => {
     vi.mocked(calculator.mergeAndCalculateSurebets).mockReturnValue([])
     vi.mocked(supabaseCache.saveSurebets).mockResolvedValue({ success: true })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = await handler({} as any, {} as any)
+    const res = await handler({} as HandlerEvent, {} as HandlerContext)
 
     expect(res?.statusCode).toBe(200)
     // It should have fetched event1
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('event1')
-    )
+    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('event1'))
     // Should update state with new index (actually just last_run in the final version)
     expect(supabaseCache.updateCronState).toHaveBeenCalledWith(
       'surebets_queue',

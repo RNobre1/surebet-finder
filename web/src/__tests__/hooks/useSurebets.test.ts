@@ -43,7 +43,7 @@ describe('useSurebets', () => {
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: [mockSurebet], error: null }),
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
   })
 
   it('starts with idle state (not loading)', () => {
@@ -56,7 +56,7 @@ describe('useSurebets', () => {
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnValue(new Promise(() => {})), // never resolves
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useSurebets())
 
@@ -82,10 +82,8 @@ describe('useSurebets', () => {
   it('handles database error', async () => {
     vi.mocked(supabase.from).mockReturnValue({
       select: vi.fn().mockReturnThis(),
-      order: vi
-        .fn()
-        .mockResolvedValue({ data: null, error: new Error('DB Error') }),
-    } as any)
+      order: vi.fn().mockResolvedValue({ data: null, error: new Error('DB Error') }),
+    } as unknown as ReturnType<typeof supabase.from>)
 
     const { result } = renderHook(() => useSurebets())
     await act(async () => {

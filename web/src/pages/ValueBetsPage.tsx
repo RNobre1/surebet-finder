@@ -303,9 +303,7 @@ export function ValueBetsPage() {
                       </td>
 
                       <td className="px-4 py-3 text-right">
-                        <span className={`font-bold ${evColor}`}>
-                          {evFormatted}
-                        </span>
+                        <span className={`font-bold ${evColor}`}>{evFormatted}</span>
                         {vb.is_highest_ev && (
                           <span
                             title="Maior EV deste mercado"

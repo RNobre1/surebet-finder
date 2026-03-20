@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handler } from '../../../netlify/functions/valuebets'
+import type { HandlerEvent, HandlerContext } from '@netlify/functions'
 import * as supabaseCache from '../../../netlify/functions/lib/supabase_cache'
 
 // Mock supabaseCache
@@ -24,12 +25,9 @@ describe('Netlify Function: valuebets', () => {
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: mockData, error: null }),
     }
-    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(
-      mockSupabase as any
-    )
+    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(mockSupabase as any)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await handler({} as any, {} as any)
+    const response = await handler({} as HandlerEvent, {} as HandlerContext)
 
     expect(response?.statusCode).toBe(200)
     const body = JSON.parse(response?.body || '[]')
@@ -45,12 +43,9 @@ describe('Netlify Function: valuebets', () => {
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
     }
-    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(
-      mockSupabase as any
-    )
+    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(mockSupabase as any)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await handler({} as any, {} as any)
+    const response = await handler({} as HandlerEvent, {} as HandlerContext)
 
     expect(response?.statusCode).toBe(500)
     expect(JSON.parse(response?.body || '{}')).toHaveProperty('error')

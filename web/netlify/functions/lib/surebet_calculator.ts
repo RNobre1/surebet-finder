@@ -36,6 +36,7 @@ export interface InternalSurebet {
   marketKey: string
   profitMargin: number // e.g., 0.05 for 5%
   legs: InternalSurebetLeg[]
+  [key: string]: unknown
 }
 
 export function mergeAndCalculateSurebets(

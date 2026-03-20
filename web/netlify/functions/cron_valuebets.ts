@@ -1,6 +1,7 @@
 import type { Handler, Config } from '@netlify/functions'
 import { getOddsApiKeys } from './lib/api_keys'
 import { aggregateValueBets } from './lib/valuebets_aggregator'
+import type { InternalValueBet } from './lib/valuebets_aggregator'
 import { saveValueBets } from './lib/supabase_cache'
 
 export const config: Config = {
@@ -28,8 +29,9 @@ export const handler: Handler = async () => {
           )
           return []
         }
-        const json = (await response.json()) as any
-        return Array.isArray(json) ? json : json.data || []
+        const json = (await response.json()) as { data?: unknown[] }
+        const data = Array.isArray(json) ? json : json.data || []
+        return data as InternalValueBet[]
       } catch (err) {
         console.error(`Failed to fetch valuebets for key ${keyConfig.key}:`, err)
         return []

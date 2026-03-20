@@ -61,11 +61,10 @@ export const handler: Handler = async () => {
           continue
         }
 
-        const json = (await response.json()) as any
-        const events = json.data || json
-        const list = Array.isArray(events) ? events : events.data || []
+        const json = (await response.json()) as { data?: unknown[] }
+        const data = Array.isArray(json) ? json : json.data || []
 
-        for (const evt of list) {
+        for (const evt of data as { id: string }[]) {
           if (evt && evt.id) {
             allEventIds.push(evt.id)
           }

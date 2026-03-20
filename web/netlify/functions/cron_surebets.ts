@@ -38,9 +38,7 @@ export const handler: Handler = async () => {
         console.log(
           `Throttled: ${
             activeEvents.length
-          } events require ${minMinutesBetweenRuns}m interval. Ran ${diffMinutes.toFixed(
-            1
-          )}m ago.`
+          } events require ${minMinutesBetweenRuns}m interval. Ran ${diffMinutes.toFixed(1)}m ago.`
         )
         return { statusCode: 200, body: 'Throttled to save API quota' }
       }
@@ -58,7 +56,7 @@ export const handler: Handler = async () => {
 
     const allKeysPromises = keys.map(async (keyConfig) => {
       const bookmakers = keyConfig.bookmakers.join(',')
-      const keyEvents: Record<string, any>[] = []
+      const keyEvents: Record<string, unknown>[] = []
 
       // We must fetch each chunk using this key
       for (const chunk of chunks) {
@@ -67,9 +65,9 @@ export const handler: Handler = async () => {
         try {
           const response = await fetch(url)
           if (!response.ok) continue
-          const json = (await response.json()) as any
+          const json = (await response.json()) as { data?: unknown[] }
           const data = Array.isArray(json) ? json : json.data || []
-          keyEvents.push(...data)
+          keyEvents.push(...(data as Record<string, unknown>[]))
         } catch (err) {
           console.error(`Failed to fetch chunk for ${keyConfig.key}:`, err)
         }

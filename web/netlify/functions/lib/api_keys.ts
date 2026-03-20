@@ -13,7 +13,7 @@ export function getOddsApiKeys(): OddsApiKeyConfig[] {
   try {
     const keys = JSON.parse(envValue) as OddsApiKeyConfig[]
     if (!Array.isArray(keys) || keys.length === 0) {
-       throw new Error('Missing or invalid ODDS_API_KEYS')
+      throw new Error('Missing or invalid ODDS_API_KEYS')
     }
     return keys
   } catch (error) {

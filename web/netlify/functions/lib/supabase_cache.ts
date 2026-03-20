@@ -11,7 +11,7 @@ export function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey)
 }
 
-export async function saveValueBets(bets: Record<string, any>[]) {
+export async function saveValueBets(bets: Record<string, unknown>[]) {
   const supabase = getSupabaseClient()
 
   // Flush old cache. Using neq 'id', '0' to delete practically everything.
@@ -28,7 +28,7 @@ export async function saveValueBets(bets: Record<string, any>[]) {
   return { success: true }
 }
 
-export async function saveSurebets(bets: Record<string, any>[]) {
+export async function saveSurebets(bets: Record<string, unknown>[]) {
   const supabase = getSupabaseClient()
 
   await supabase.from('cached_surebets').delete().neq('id', '0')
@@ -64,7 +64,7 @@ export async function getCronState(
 
 export async function updateCronState(
   type: 'surebets' | 'valuebets' | 'surebets_queue',
-  state: Record<string, any>
+  state: Record<string, unknown>
 ) {
   const supabase = getSupabaseClient()
 

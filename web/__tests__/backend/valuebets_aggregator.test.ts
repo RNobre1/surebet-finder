@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { aggregateValueBets } from '../../netlify/functions/lib/valuebets_aggregator'
+import { aggregateValueBets, type InternalValueBet } from '../../netlify/functions/lib/valuebets_aggregator'
 
 describe('ValueBets Aggregator', () => {
   it('should format and flag the highest EV for the same event and market outcome', () => {
@@ -12,9 +12,9 @@ describe('ValueBets Aggregator', () => {
         betSide: 'home',
         expectedValue: 0.05, // 5%
         market: { name: 'h2h', home: 'Nadal', away: 'Federer' },
-        bookmakerOdds: { home: 1.9 }
-      }
-    ]
+        bookmakerOdds: { home: 1.9 },
+      },
+    ] as InternalValueBet[]
 
     const key2Bets = [
       {
@@ -25,7 +25,7 @@ describe('ValueBets Aggregator', () => {
         betSide: 'home',
         expectedValue: 0.08, // 8% - Better!
         market: { name: 'h2h', home: 'Nadal', away: 'Federer' },
-        bookmakerOdds: { home: 2.1 }
+        bookmakerOdds: { home: 2.1 },
       },
       {
         id: 'vb-3',
@@ -35,21 +35,17 @@ describe('ValueBets Aggregator', () => {
         betSide: 'away',
         expectedValue: 0.04, // 4% - Only one for Federer
         market: { name: 'h2h', home: 'Nadal', away: 'Federer' },
-        bookmakerOdds: { away: 2.5 }
-      }
-    ]
+        bookmakerOdds: { away: 2.5 },
+      },
+    ] as InternalValueBet[]
 
-    const aggregated = aggregateValueBets([key1Bets as any, key2Bets as any])
+    const aggregated = aggregateValueBets([key1Bets, key2Bets])
 
     expect(aggregated).toHaveLength(3)
 
     // Check flags
-    const betanoNadal = aggregated.find(
-      (b) => b.bookmaker === 'betano' && b.betSide === 'home'
-    )
-    const betfairNadal = aggregated.find(
-      (b) => b.bookmaker === 'betfair' && b.betSide === 'home'
-    )
+    const betanoNadal = aggregated.find((b) => b.bookmaker === 'betano' && b.betSide === 'home')
+    const betfairNadal = aggregated.find((b) => b.bookmaker === 'betfair' && b.betSide === 'home')
     const betfairFederer = aggregated.find((b) => b.betSide === 'away')
 
     expect(betfairNadal?.is_highest_ev).toBe(true) // 8% > 5%
@@ -67,9 +63,9 @@ describe('ValueBets Aggregator', () => {
       expectedValue: 0.05,
       market: { name: 'h2h' },
       bookmakerOdds: { home: 1.9 },
-    }
+    } as InternalValueBet
 
-    const aggregated = aggregateValueBets([[bet1 as any], [bet1 as any]])
+    const aggregated = aggregateValueBets([[bet1], [bet1]])
 
     expect(aggregated).toHaveLength(1) // Deduped to 1
   })

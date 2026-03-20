@@ -4,10 +4,11 @@ export interface InternalValueBet {
   bookmaker: string
   betSide: string
   expectedValue: number
-  market: any
-  bookmakerOdds: any
+  market: Record<string, unknown> | null
+  bookmakerOdds: Record<string, unknown> | null
   sportKey: string
   is_highest_ev?: boolean
+  [key: string]: unknown
 }
 
 export function aggregateValueBets(
