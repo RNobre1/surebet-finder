@@ -304,6 +304,11 @@ export function ValueBetsPage() {
 
                       <td className="px-4 py-3 text-right">
                         <span className={`font-bold ${evColor}`}>{evFormatted}</span>
+                        {vb.is_highest_ev && (
+                          <span title="Maior EV deste mercado" className="ml-2 inline-flex items-center rounded-full bg-yellow-400/10 px-1.5 py-0.5 text-xs font-semibold text-yellow-500 ring-1 ring-inset ring-yellow-400/20">
+                            ⭐ Máx
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-4 py-3 text-center">

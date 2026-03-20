@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { ApiValueBet } from '../types'
+import { supabase } from '../lib/supabase'
 import { removeDuplicateValueBets } from '../utils/valueBetsUtils'
 
 interface UseValueBetsState {
@@ -18,17 +19,20 @@ export function useValueBets(): UseValueBetsState {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/valuebets')
-      if (!res.ok) {
-        throw new Error(`Erro ${res.status} ao buscar value bets`)
-      }
-      const data: ApiValueBet[] = await res.json()
-      // Sort descending by expectedValue and remove duplicates
+      const { data, error: dbError } = await supabase
+        .from('cached_valuebets')
+        .select('*')
+        .order('expectedValue', { ascending: false })
+
+      if (dbError) throw dbError
+
+      // Assuming valuebets in DB are already deduped by aggregator,
+      // but applying it just in case if components expect it.
       const uniqueData = Array.isArray(data) ? removeDuplicateValueBets(data) : []
       const sorted = [...uniqueData].sort((a, b) => b.expectedValue - a.expectedValue)
       setValueBets(sorted)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      setError(err instanceof Error ? err.message : 'Erro ao carregar valuebets do banco local')
       setValueBets([])
     } finally {
       setLoading(false)

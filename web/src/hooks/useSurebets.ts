@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { ApiSurebet } from '../types'
+import { supabase } from '../lib/supabase'
 
 interface UseSurebetsState {
   surebets: ApiSurebet[]
@@ -17,14 +18,16 @@ export function useSurebets(): UseSurebetsState {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/surebets')
-      if (!res.ok) {
-        throw new Error(`Erro ${res.status} ao buscar surebets`)
-      }
-      const data: ApiSurebet[] = await res.json()
-      setSurebets(Array.isArray(data) ? data : [])
+      const { data, error: dbError } = await supabase
+        .from('cached_surebets')
+        .select('*')
+        .order('profitMargin', { ascending: false })
+
+      if (dbError) throw dbError
+
+      setSurebets(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      setError(err instanceof Error ? err.message : 'Erro ao carregar surebets do banco local')
       setSurebets([])
     } finally {
       setLoading(false)

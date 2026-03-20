@@ -127,6 +127,7 @@ export interface ApiValueBet {
   market: ValueBetMarket
   bookmakerOdds: ValueBetOdds
   event?: SurebetEvent
+  is_highest_ev?: boolean
 }
 
 // ─── Free Bet ────────────────────────────────────────────────────────────────
