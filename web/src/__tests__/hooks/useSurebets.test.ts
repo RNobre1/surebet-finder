@@ -48,7 +48,7 @@ describe('useSurebets', () => {
 
   it('starts loading on mount', async () => {
     const { result } = renderHook(() => useSurebets())
-    // It might be true or false depending on how fast the effect runs, 
+    // It might be true or false depending on how fast the effect runs,
     // but we expect it to eventually finish loading
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.surebets).toHaveLength(1)
