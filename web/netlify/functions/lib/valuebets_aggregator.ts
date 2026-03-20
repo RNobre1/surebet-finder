@@ -11,9 +11,7 @@ export interface InternalValueBet {
   [key: string]: unknown
 }
 
-export function aggregateValueBets(
-  allValueBetsNested: InternalValueBet[][]
-): InternalValueBet[] {
+export function aggregateValueBets(allValueBetsNested: InternalValueBet[][]): InternalValueBet[] {
   // Flatten array
   const flattened: InternalValueBet[] = allValueBetsNested.flat()
 

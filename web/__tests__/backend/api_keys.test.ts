@@ -2,21 +2,21 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { getOddsApiKeys } from '../../netlify/functions/lib/api_keys'
 
 describe('API Keys Config Parser', () => {
-  // @ts-ignore
+  // @ts-expect-error: bypass typings for testing
   const originalEnv = process.env
 
   beforeEach(() => {
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     process.env = { ...originalEnv }
   })
 
   afterEach(() => {
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     process.env = originalEnv
   })
 
   it('should parse valid JSON configuration correctly', () => {
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     process.env.ODDS_API_KEYS = JSON.stringify([
       { key: 'key1', bookmakers: ['betano', 'bet365'] },
       { key: 'key2', bookmakers: ['sportingbet', 'betfair_sb_uk'] },
@@ -32,14 +32,14 @@ describe('API Keys Config Parser', () => {
   })
 
   it('should fallback gracefully or throw if ODDS_API_KEYS is missing', () => {
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     delete process.env.ODDS_API_KEYS
 
     expect(() => getOddsApiKeys()).toThrowError(/Missing or invalid ODDS_API_KEYS/)
   })
 
   it('should fail if JSON is invalid', () => {
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     process.env.ODDS_API_KEYS = '{ invalid json'
 
     expect(() => getOddsApiKeys()).toThrowError(/Missing or invalid ODDS_API_KEYS/)

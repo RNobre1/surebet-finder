@@ -28,13 +28,13 @@ import { saveValueBets, getCronState } from '../../netlify/functions/lib/supabas
 describe('Supabase Cache Layer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     delete process.env.VITE_SUPABASE_URL
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     delete process.env.SUPABASE_SERVICE_ROLE_KEY
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     process.env.SUPABASE_URL = 'http://localhost'
-    // @ts-ignore
+    // @ts-expect-error: bypass typings for testing
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'mock-key'
   })
 
@@ -58,7 +58,7 @@ describe('Supabase Cache Layer', () => {
 
   it('should fetch cron state correctly', async () => {
     const mockState = { id: 1, last_run: '2025', current_index: 0, total_events: 150 }
-    
+
     selectMock.mockReturnValue({
       eq: vi.fn().mockReturnValue({
         single: vi.fn().mockResolvedValue({ data: mockState, error: null }),

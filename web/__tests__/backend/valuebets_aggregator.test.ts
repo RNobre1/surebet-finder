@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { aggregateValueBets, type InternalValueBet } from '../../netlify/functions/lib/valuebets_aggregator'
+import {
+  aggregateValueBets,
+  type InternalValueBet,
+} from '../../netlify/functions/lib/valuebets_aggregator'
 
 describe('ValueBets Aggregator', () => {
   it('should format and flag the highest EV for the same event and market outcome', () => {

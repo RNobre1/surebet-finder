@@ -1,7 +1,7 @@
 import type { Handler, Config } from '@netlify/functions'
 import { getOddsApiKeys } from './lib/api_keys'
 import { getCronState, updateCronState, saveSurebets } from './lib/supabase_cache'
-import { mergeAndCalculateSurebets } from './lib/surebet_calculator'
+import { mergeAndCalculateSurebets, type OddsApiEvent } from './lib/surebet_calculator'
 
 export const config: Config = {
   schedule: '*/5 * * * *', // Trigger every 5 mins, throttling handled internally
@@ -80,7 +80,7 @@ export const handler: Handler = async () => {
 
     // Calculate surebets combining the arrays from all keys
     const calculatedSurebets = mergeAndCalculateSurebets(
-      allKeyResults as any[][]
+      allKeyResults as unknown as OddsApiEvent[][]
     )
     console.log(
       `Calculated ${calculatedSurebets.length} surebets across ${activeEvents.length} events.`

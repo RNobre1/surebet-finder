@@ -20,7 +20,9 @@ describe('Netlify Function: surebets', () => {
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: mockData, error: null }),
     }
-    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(mockSupabase as any)
+    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof supabaseCache.getSupabaseClient>
+    )
 
     const response = await handler({} as HandlerEvent, {} as HandlerContext)
 
@@ -36,7 +38,9 @@ describe('Netlify Function: surebets', () => {
       select: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } }),
     }
-    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(mockSupabase as any)
+    vi.mocked(supabaseCache.getSupabaseClient).mockReturnValue(
+      mockSupabase as unknown as ReturnType<typeof supabaseCache.getSupabaseClient>
+    )
 
     const response = await handler({} as HandlerEvent, {} as HandlerContext)
 

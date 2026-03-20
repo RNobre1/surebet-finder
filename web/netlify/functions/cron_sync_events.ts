@@ -55,9 +55,7 @@ export const handler: Handler = async () => {
       try {
         const response = await fetch(url)
         if (!response.ok) {
-          console.error(
-            `Error fetching events for ${sport}: ${response.statusText}`
-          )
+          console.error(`Error fetching events for ${sport}: ${response.statusText}`)
           continue
         }
 
@@ -74,9 +72,7 @@ export const handler: Handler = async () => {
       }
     }
 
-    console.log(
-      `Synced a total of ${allEventIds.length} events for the next 48h.`
-    )
+    console.log(`Synced a total of ${allEventIds.length} events for the next 48h.`)
 
     // Save to supersonic cache
     await updateCronState('surebets_queue', {

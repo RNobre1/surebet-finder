@@ -45,9 +45,7 @@ describe('Cron Surebets Scheduled Function', () => {
       last_index: 0,
     })
 
-    vi.mocked(apiKeys.getOddsApiKeys).mockReturnValue([
-      { key: 'key1', bookmakers: ['b1', 'b2'] },
-    ])
+    vi.mocked(apiKeys.getOddsApiKeys).mockReturnValue([{ key: 'key1', bookmakers: ['b1', 'b2'] }])
 
     mockFetch.mockResolvedValue({
       ok: true,

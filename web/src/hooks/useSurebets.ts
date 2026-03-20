@@ -27,11 +27,7 @@ export function useSurebets(): UseSurebetsState {
 
       setSurebets(data || [])
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Erro ao carregar surebets do banco local'
-      )
+      setError(err instanceof Error ? err.message : 'Erro ao carregar surebets do banco local')
       setSurebets([])
     } finally {
       setLoading(false)

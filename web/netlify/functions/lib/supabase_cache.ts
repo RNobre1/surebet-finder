@@ -44,15 +44,9 @@ export async function saveSurebets(bets: Record<string, unknown>[]) {
   return { success: true }
 }
 
-export async function getCronState(
-  type: 'surebets' | 'valuebets' | 'surebets_queue'
-) {
+export async function getCronState(type: 'surebets' | 'valuebets' | 'surebets_queue') {
   const supabase = getSupabaseClient()
-  const { data, error } = await supabase
-    .from('cron_state')
-    .select('*')
-    .eq('id', type)
-    .single()
+  const { data, error } = await supabase.from('cron_state').select('*').eq('id', type).single()
 
   if (error && error.code !== 'PGRST116') {
     // PGRST116 is 'not found'
@@ -76,10 +70,7 @@ export async function updateCronState(
     if (error) throw error
   } else {
     // Upsert
-    const { error } = await supabase
-      .from('cron_state')
-      .update(payload)
-      .eq('id', type)
+    const { error } = await supabase.from('cron_state').update(payload).eq('id', type)
     if (error) throw error
   }
 }

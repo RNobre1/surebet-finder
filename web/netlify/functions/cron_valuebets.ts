@@ -24,9 +24,7 @@ export const handler: Handler = async () => {
       try {
         const response = await fetch(url)
         if (!response.ok) {
-          console.error(
-            `Error fetching valuebets for key ${keyConfig.key}: ${response.statusText}`
-          )
+          console.error(`Error fetching valuebets for key ${keyConfig.key}: ${response.statusText}`)
           return []
         }
         const json = (await response.json()) as { data?: unknown[] }

@@ -39,9 +39,7 @@ export interface InternalSurebet {
   [key: string]: unknown
 }
 
-export function mergeAndCalculateSurebets(
-  allEventsNested: OddsApiEvent[][]
-): InternalSurebet[] {
+export function mergeAndCalculateSurebets(allEventsNested: OddsApiEvent[][]): InternalSurebet[] {
   // 1. Flatten arrays
   const flattened = allEventsNested.flat()
 
